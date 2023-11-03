@@ -28,35 +28,7 @@ This handles level-ups during the batch!
 ** need to get the server to min security and max money before batching! **
  */
 import { NS } from "@ns";
-
-export function growThreads(ns: NS, target: string) {
-  const money = ns.getServerMoneyAvailable(target);
-  const maxMoney = ns.getServerMaxMoney(target);
-
-  const factor = maxMoney / money;
-  if (factor <= 1) {
-    return 0;
-  }
-  return Math.ceil(ns.growthAnalyze(target, factor));
-}
-
-export function weakenThreads(ns: NS, target: string) {
-  const security = ns.getServerSecurityLevel(target);
-  const minSecurity = ns.getServerMinSecurityLevel(target);
-
-  const neededReduction = security - minSecurity;
-  if (neededReduction === 0) {
-    return 0;
-  }
-
-  let threads = 1;
-  let reduction = 0;
-  do {
-    reduction = ns.weakenAnalyze(threads++);
-  } while (reduction < neededReduction && threads < 131072);
-
-  return threads - 1;
-}
+import { growThreadsFor, weakenThreadsFor } from "./lib/hacks";
 
 export async function main(ns: NS) {
   ns.disableLog("ALL");
@@ -84,12 +56,12 @@ export async function main(ns: NS) {
     const minSecurity = ns.getServerMinSecurityLevel(target);
     const currentSecurity = ns.getServerSecurityLevel(target);
 
-    let grows = growThreads(ns, target);
+    let grows = growThreadsFor(ns, target);
     const origGrows = grows;
     if (grows > maxThreads) {
       grows = maxThreads;
     }
-    let weakens = weakenThreads(ns, target);
+    let weakens = weakenThreadsFor(ns, target);
     const origWeakens = weakens;
     if (weakens > maxThreads) {
       weakens = maxThreads;

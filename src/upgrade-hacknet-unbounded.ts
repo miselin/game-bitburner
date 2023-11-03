@@ -2,6 +2,8 @@ import { NS } from "@ns";
 
 /**
  * Upgrade the hacknet node RAM/CPUs (it's expected they're at level 100 already)
+ *
+ * Won't stop until they're 100% upgraded.
  */
 
 export async function main(ns: NS) {

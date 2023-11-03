@@ -1,16 +1,12 @@
 import { NS, AutocompleteData } from "@ns";
 
-import { analyzeTarget, GAP } from "./hgw-batch";
+import { analyzeTarget } from "./lib/hacks";
+import { GAP } from "./lib/constants";
+import { allDone } from "./lib/run";
+import { prepare } from "./lib/hosts";
 
 export function autocomplete(data: AutocompleteData) {
   return [...data.servers];
-}
-
-const GAP_BETWEEN_BATCHES = GAP * 4;
-
-async function prepare(ns: NS, target: string) {
-  const pid = ns.run("prepare.js", 1, target);
-  while (ns.isRunning(pid)) await ns.sleep(1000);
 }
 
 export async function main(ns: NS) {
@@ -30,26 +26,7 @@ export async function main(ns: NS) {
     const cores = ns.getServer().cpuCores;
 
     // run on every batch of batches - our hacking skill changes the numbers
-    const { totalThreads, weakenTime, growTime } = analyzeTarget(
-      ns,
-      target,
-      cores
-    );
-
-    // need to account for the gap between batches when considering the duration
-    // this stops us from taking too long to spin up all the batches and overlapping with old batches
-    // this needs to be the gap between the first two scripts so we never overlap batches
-    const longestBatch = weakenTime + GAP - growTime;
-    const maxBatchesBasedOnTime = longestBatch / GAP_BETWEEN_BATCHES;
-
-    ns.printf(
-      "RUNB: %s longest batch will take %.2f seconds (due to %.2f seconds weaken), meaning we can run at most %.2f batches concurrently, gap is %.4f seconds",
-      target,
-      longestBatch / 1000.0,
-      weakenTime / 1000.0,
-      maxBatchesBasedOnTime,
-      GAP_BETWEEN_BATCHES / 1000.0
-    );
+    const { totalThreads } = analyzeTarget(ns, target, cores);
 
     const neededRamPerBatch =
       totalThreads * 2 + ns.getScriptRam("hgw-batch.js");
@@ -59,10 +36,7 @@ export async function main(ns: NS) {
       ns.getServerMaxRam(ns.getHostname()) -
       ns.getServerUsedRam(ns.getHostname());
 
-    const maxBatches = Math.min(
-      Math.floor(availableRam / neededRamPerBatch)
-      // Math.floor(maxBatchesBasedOnTime)
-    );
+    const maxBatches = Math.floor(availableRam / neededRamPerBatch);
 
     if (maxBatches === 0) {
       ns.printf(
@@ -95,7 +69,7 @@ export async function main(ns: NS) {
         continue;
       }
       pids.push(pid);
-      await ns.sleep(GAP_BETWEEN_BATCHES);
+      await ns.sleep(GAP * 4);
     }
 
     if (pids.length === 0) {
@@ -104,10 +78,8 @@ export async function main(ns: NS) {
     }
 
     // wait for the every script in the batch to complete before continuing
-    for (let i = 0; i < pids.length; i++) {
-      while (ns.isRunning(pids[i])) {
-        await ns.sleep(1000);
-      }
+    while (!allDone(ns, pids)) {
+      await ns.sleep(1000);
     }
   }
 }

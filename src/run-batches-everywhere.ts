@@ -1,52 +1,6 @@
 import { NS } from "@ns";
-
-type Host = {
-  name: string;
-  money: number;
-  currentMoney: number;
-  level: number;
-  securityLevel: number;
-  minSecurityLevel: number;
-};
-
-function scanHost(ns: NS, host: string, machineList: Set<string>) {
-  ns.scan(host).forEach((peer) => {
-    if (machineList.has(peer)) {
-      return;
-    }
-
-    machineList.add(peer);
-
-    scanHost(ns, peer, machineList);
-  });
-}
-
-export async function killallOnServer(ns: NS, server: string) {
-  // make sure we're the only show in town
-  while (ns.scriptKill("run-batches.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("hgw-batch.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("prepare.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("grow.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("hack.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("weaken.js", server)) {
-    await ns.sleep(1000);
-  }
-}
+import { analyzeHackableHosts } from "./lib/hosts";
+import { killallOnServer } from "./lib/run";
 
 export async function main(ns: NS) {
   ns.disableLog("ALL");
@@ -56,50 +10,12 @@ export async function main(ns: NS) {
     // put the lowest level target on home
     const servers = ["home", ...ns.getPurchasedServers()];
 
-    const me = ns.getHostname();
-
-    // enumerate all the potential machines out there
-    const machines = new Set([me]);
-    scanHost(ns, me, machines);
-
-    const myHackingLevel = ns.getHackingLevel();
-
     // get info about them
-    const hosts: Array<Host> = [];
-    machines.forEach((host) => {
-      const maxMoney = ns.getServerMaxMoney(host);
-      const currentMoney = ns.getServerMoneyAvailable(host);
-      const hackingLevel = ns.getServerRequiredHackingLevel(host);
-      const securityLevel = ns.getServerSecurityLevel(host);
-      const minSecurityLevel = ns.getServerMinSecurityLevel(host);
-
-      // · As a rule of thumb, your hacking target should be the server with highest max money that's required hacking level is under 1/2 of your hacking level.
-
-      // should only target hosts that are at most 50% of our hacking level
-      if (hackingLevel * 2.0 > myHackingLevel) {
-        return;
-      }
-
-      if (maxMoney === 0) {
-        return;
-      }
-
-      if (!ns.hasRootAccess(host)) {
-        return;
-      }
-
-      hosts.push({
-        name: host,
-        money: maxMoney,
-        currentMoney: currentMoney,
-        level: hackingLevel,
-        securityLevel,
-        minSecurityLevel,
-      });
-    });
-
+    const hosts = analyzeHackableHosts(ns);
     hosts.sort((a, b) => a.money - b.money);
 
+    // until we have all 25 servers + home, don't offset the hosts list
+    // otherwise we try to hit big servers when we don't have the hacking skill up yet
     let offset = servers.length == 26 ? hosts.length - servers.length : 0;
     if (offset < 0) {
       offset = 0;
@@ -125,13 +41,12 @@ export async function main(ns: NS) {
         host.name
       );
       if (running) {
-        // if the top 25 shifts, we might need to terminate an old batch that is no longer in the list
         if (running.args[0] === host.name) {
           continue;
         }
       }
 
-      // make sure we're the only show in town
+      // if the top 25 shifts, we might need to terminate an old batch that is no longer in the list
       await killallOnServer(ns, servers[i]);
 
       ns.printf(

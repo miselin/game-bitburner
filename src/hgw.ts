@@ -1,24 +1,9 @@
 import { NS } from "@ns";
-
-export const colors = {
-  black: "\u001b[30m",
-  red: "\u001b[31m",
-  green: "\u001b[32m",
-  yellow: "\u001b[33m",
-  blue: "\u001b[34m",
-  magenta: "\u001b[35m",
-  cyan: "\u001b[36m",
-  white: "\u001b[37m",
-  brightBlack: "\u001b[30;1m",
-  brightRed: "\u001b[31;1m",
-  brightGreen: "\u001b[32;1m",
-  brightYellow: "\u001b[33;1m",
-  brightBlue: "\u001b[34;1m",
-  brightMagenta: "\u001b[35;1m",
-  brightCyan: "\u001b[36;1m",
-  brightWhite: "\u001b[37;1m",
-  default: "\u001b[0m",
-};
+import {
+  growThreadsFor,
+  hacksNeededForPercent,
+  weakenThreadsFor,
+} from "./lib/hacks";
 
 // at this percent, we'll hack instead of grow
 const MONEY_THRESHOLD = 0.9;
@@ -26,14 +11,14 @@ const MONEY_THRESHOLD = 0.9;
 // percent of max money to keep on the target to avoid overhacking
 // early on this should be close to MONEY_THRESHOLD, later on this can
 // shift when there's RAM to burn on grow()s
-const MINIMUM_REMAINING_MONEY = 0.25;
+const MINIMUM_REMAINING_MONEY = 0.8;
 
 const PERCENT_HACK = (MONEY_THRESHOLD - MINIMUM_REMAINING_MONEY) * 100;
 
 function printTargetStats(ns: NS, target: string) {
   ns.tprintf("\n== HGW analyze %s ==", target);
 
-  const growthThreads = growThreads(ns, target);
+  const growthThreads = growThreadsFor(ns, target);
 
   ns.tprintf(
     "- need %d grow threads (%.2f seconds)",
@@ -41,7 +26,7 @@ function printTargetStats(ns: NS, target: string) {
     ns.getGrowTime(target) / 1000
   );
 
-  const threadsToWeaken = weakenThreads(ns, target);
+  const threadsToWeaken = weakenThreadsFor(ns, target);
 
   ns.tprintf(
     "- need %d weaken threads (%.2f seconds)",
@@ -71,39 +56,6 @@ function printServerStats(ns: NS, servers: Array<Server>) {
     "\n== HGW sees %d threads across all purchased servers! ==\n\n",
     totalThreads
   );
-}
-
-function growThreads(ns: NS, target: string) {
-  const money = ns.getServerMoneyAvailable(target);
-  const maxMoney = ns.getServerMaxMoney(target);
-
-  const factor = (maxMoney * MONEY_THRESHOLD) / money;
-  if (factor <= 1) {
-    return 0;
-  }
-  return Math.ceil(ns.growthAnalyze(target, factor));
-}
-
-function weakenThreads(ns: NS, target: string) {
-  const security = ns.getServerSecurityLevel(target);
-  const minSecurity = ns.getServerMinSecurityLevel(target);
-
-  const neededReduction = security - minSecurity;
-  if (neededReduction === 0) {
-    return 0;
-  }
-
-  let threads = 1;
-  let reduction = 0;
-  do {
-    reduction = ns.weakenAnalyze(threads++);
-  } while (reduction < neededReduction);
-
-  return threads - 1;
-}
-
-function hacksNeededForPercent(ns: NS, target: string, percent: number) {
-  return Math.ceil(percent / 100 / ns.hackAnalyze(target));
 }
 
 type Server = {
@@ -225,8 +177,8 @@ export async function main(ns: NS) {
       updateState(ns, servers);
 
       // what to do?
-      const needsGrow = growThreads(ns, target);
-      const needsWeaken = weakenThreads(ns, target);
+      const needsGrow = growThreadsFor(ns, target);
+      const needsWeaken = weakenThreadsFor(ns, target);
       const threadsToHack = hacksNeededForPercent(ns, target, PERCENT_HACK);
 
       if (needsWeaken > 0) {

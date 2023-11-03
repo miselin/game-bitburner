@@ -1,41 +1,10 @@
 import { NS } from "@ns";
-import { analyzeTarget, GAP } from "./hgw-batch";
 import React from "./lib/react";
+import { TableCell, TableHeader } from "./lib/components";
 
 type Host = {
   name: string;
   ram: number;
-};
-
-const TableHeader = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <th
-      style={{
-        paddingTop: "0.5em",
-        paddingBottom: "0.5em",
-        paddingLeft: "0.5em",
-        paddingRight: "0.5em",
-        textAlign: "center",
-      }}
-    >
-      {children}
-    </th>
-  );
-};
-
-const TableCell = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <td
-      style={{
-        paddingTop: "0.5em",
-        paddingBottom: "0.5em",
-        paddingLeft: "0.5em",
-        paddingRight: "0.5em",
-      }}
-    >
-      {children}
-    </td>
-  );
 };
 
 const HostRow = ({ n, host }: { n: number; host: Host }) => {

@@ -1,7 +1,7 @@
 import { NS } from "@ns";
 
 /**
- * Upgrade servers that we already own to 128 GB of RAM
+ * Upgrade servers that we already own to max RAM.
  */
 
 export async function main(ns: NS) {
@@ -29,15 +29,16 @@ export async function main(ns: NS) {
         }
       }
 
-      // 100% of servers are at 128G of RAM!
+      // 100% of servers are at targetRam!
       if (stillNeedingUpdate === 0) {
         break;
       }
 
+      // wait a bit, this helps avoid accidentally spending money that might go to darkweb or whatever
       await ns.sleep(10000);
     }
 
-    // once all the servers hit the original RAM target (128 GB), keep doubling to maximize them
+    // once all the servers hit the RAM target, keep doubling to maximize them
     targetRam *= 2;
 
     // finish up once we hit max RAM

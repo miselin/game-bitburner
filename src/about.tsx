@@ -1,6 +1,6 @@
 import { NS, AutocompleteData } from "@ns";
 import React from "./lib/react";
-import { analyzeTarget } from "./hgw-batch";
+import { analyzeTarget } from "./lib/hacks";
 
 export function autocomplete(data: AutocompleteData) {
   return [...data.servers];

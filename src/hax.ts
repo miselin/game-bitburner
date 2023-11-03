@@ -2,6 +2,7 @@ import { NS } from "@ns";
 
 export async function main(ns: NS) {
   /** undocumented function */
+  // @ts-expect-error it's undocumented
   ns.exploit();
 
   /**
@@ -20,6 +21,7 @@ export async function main(ns: NS) {
     console.log("hey");
     elem.style.display = "none";
     elem.style.visibility = "hidden";
+    // @ts-expect-error calling a bound function
     orig(ev);
     elem.onclick = orig;
   };

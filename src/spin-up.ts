@@ -2,6 +2,8 @@ import { NS } from "@ns";
 
 /**
  * Start all the necessary "home" scripts.
+ *
+ * After installing augs, wake up, run spin-up.js. EZ!
  */
 
 export async function main(ns: NS) {

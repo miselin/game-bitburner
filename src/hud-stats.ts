@@ -1,12 +1,5 @@
 import { NS } from "@ns";
-
-function getTotalPurchasedThreads(ns: NS) {
-  return (
-    ["home", ...ns.getPurchasedServers()]
-      .map((server) => ns.getServerMaxRam(server))
-      .reduce((accum, v) => accum + v, 0) / 2
-  );
-}
+import { getTotalPurchasedThreads } from "./lib/hosts";
 
 export async function main(ns: NS) {
   const doc = globalThis["document"];

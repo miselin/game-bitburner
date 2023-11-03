@@ -1,6 +1,19 @@
 import { NS } from "@ns";
+import { getAllHosts } from "./lib/hosts";
 
-import { getAllHosts } from "./which-server";
+/**
+ * Early game hack manager, just tries to maximize income without RAM for HWGW batching.
+ *
+ * Splits host RAM into "slots" so multiple managers can run in parallel.
+ *
+ * The "nth" argument sets which slot to use, "total" sets the total count of slots.
+ *
+ * e.g.
+ * $ manager.js n00dles 0 2
+ * $ manager.js joesguns 1 2
+ *
+ * This will use half the RAM on each host for n00dles, and half for joesguns.
+ */
 
 type Host = {
   // hostname

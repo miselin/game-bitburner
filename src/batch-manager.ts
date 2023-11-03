@@ -1,117 +1,16 @@
 import { NS } from "@ns";
-import { growThreads, weakenThreads } from "./prepare";
-import { analyzeTarget, GAP } from "./hgw-batch";
+import { GAP } from "./lib/constants";
+import { analyzeHackableHosts } from "./lib/hosts";
+import { getRunnableServers, killallOnServer, runWhereFits } from "./lib/run";
+import type { Host } from "./lib/hosts";
+import { growThreadsFor, weakenThreadsFor } from "./lib/hacks";
 
-const DEBUG = false;
-
-type RunnableServer = {
-  hostname: string;
-  cpuCores: number;
-  ramUsed: number;
-  maxRam: number;
-};
-
-type Host = {
-  name: string;
-  money: number;
-  currentMoney: number;
-  level: number;
-  securityLevel: number;
-  minSecurityLevel: number;
+type BatchHost = {
   prepared: boolean;
   currentlyPreparing: boolean;
-  ramPerBatch: number;
-  moneyPerMs: number;
   retryAfter: number;
   retryMs: number;
-};
-
-function scanHost(ns: NS, host: string, machineList: Set<string>) {
-  ns.scan(host).forEach((peer) => {
-    if (machineList.has(peer)) {
-      return;
-    }
-
-    machineList.add(peer);
-
-    scanHost(ns, peer, machineList);
-  });
-}
-
-function findWhereFits(
-  ns: NS,
-  servers: Array<RunnableServer>,
-  totalRam: number
-): RunnableServer | null {
-  for (let i = 0; i < servers.length; i++) {
-    const availRam = servers[i].maxRam - servers[i].ramUsed;
-    if (DEBUG) {
-      ns.tprintf(
-        "checking server %s: %.2f vs %.2f < %.2f?",
-        servers[i].hostname,
-        servers[i].maxRam,
-        servers[i].ramUsed,
-        totalRam
-      );
-    }
-    if (availRam < totalRam) {
-      continue;
-    }
-
-    return servers[i];
-  }
-
-  return null;
-}
-
-// Run the given script on the first server where it fits.
-function runWhereFits(
-  ns: NS,
-  servers: Array<RunnableServer>,
-  script: string,
-  threads: number,
-  totalRam: number,
-  ...args: (string | number | boolean)[]
-) {
-  const server = findWhereFits(ns, servers, totalRam);
-  if (server === null) {
-    ns.printf(
-      "WARN: script %s needing %d RAM does not fit anywhere",
-      script,
-      totalRam
-    );
-    return 0;
-  }
-
-  return ns.exec(script, server.hostname, threads, ...args, server.cpuCores);
-}
-
-export async function killallOnServer(ns: NS, server: string) {
-  // make sure we're the only show in town
-  while (ns.scriptKill("run-batches.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("hgw-batch.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("prepare.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("grow.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("hack.js", server)) {
-    await ns.sleep(1000);
-  }
-
-  while (ns.scriptKill("weaken.js", server)) {
-    await ns.sleep(1000);
-  }
-}
+} & Host;
 
 export async function main(ns: NS) {
   ns.disableLog("ALL");
@@ -122,7 +21,7 @@ export async function main(ns: NS) {
   // 3. For the highest value target, run a batch
   // 4. Wait for TIME_BETWEEN_BATCH time
 
-  const hostData: Record<string, Host> = {};
+  const hostData: Record<string, BatchHost> = {};
 
   let batch = 0;
 
@@ -131,100 +30,67 @@ export async function main(ns: NS) {
 
   // eslint-disable-next-line
   while (true) {
-    // get servers, sorted by amount of RAM available
-    const servers = ["home", ...ns.getPurchasedServers()].map(
-      (s): RunnableServer => {
-        return {
-          hostname: s,
-          cpuCores: ns.getServer(s).cpuCores,
-          maxRam: ns.getServerMaxRam(s),
-          ramUsed: ns.getServerUsedRam(s),
-        };
-      }
-    );
-    servers.sort((a, b) => {
-      const availA = a.maxRam - a.ramUsed;
-      const availB = b.maxRam - b.ramUsed;
-      return availB - availA;
-    });
+    const servers = getRunnableServers(ns);
 
     // enumerate all the potential machines out there
-    const machines = new Set(["home"]);
-    scanHost(ns, "home", machines);
-
-    const myHackingLevel = ns.getHackingLevel();
-
-    // get info about them
-    machines.forEach((host) => {
-      const maxMoney = ns.getServerMaxMoney(host);
-      const currentMoney = ns.getServerMoneyAvailable(host);
-      const hackingLevel = ns.getServerRequiredHackingLevel(host);
-      const securityLevel = ns.getServerSecurityLevel(host);
-      const minSecurityLevel = ns.getServerMinSecurityLevel(host);
-
-      if (hackingLevel * 2.0 > myHackingLevel) {
-        return;
-      }
-
-      if (maxMoney === 0) {
-        return;
-      }
-
-      if (!ns.hasRootAccess(host)) {
-        return;
-      }
-
-      const { totalThreads, weakenTime } = analyzeTarget(ns, host, 1);
-
-      if (!hostData[host]) {
-        hostData[host] = {
-          name: host,
-          money: maxMoney,
-          currentMoney: currentMoney,
-          level: hackingLevel,
-          securityLevel,
-          minSecurityLevel,
+    analyzeHackableHosts(ns).forEach((host) => {
+      if (!hostData[host.name]) {
+        hostData[host.name] = {
+          ...host,
           prepared:
-            currentMoney === maxMoney && securityLevel === minSecurityLevel,
+            host.currentMoney === host.money &&
+            host.securityLevel === host.minSecurityLevel,
           currentlyPreparing: false,
-          ramPerBatch: totalThreads * 2 + ns.getScriptRam("hgw-batch.js"),
-          moneyPerMs: (maxMoney * 0.5) / (weakenTime + 2 * GAP),
           retryAfter: 0,
           retryMs: 5000,
         };
       }
 
-      hostData[host].money = maxMoney;
-      hostData[host].currentMoney = currentMoney;
-      hostData[host].securityLevel = securityLevel;
-      hostData[host].minSecurityLevel = minSecurityLevel;
-      hostData[host].ramPerBatch =
-        totalThreads * 2 + ns.getScriptRam("hgw-batch.js");
+      hostData[host.name].money = host.money;
+      hostData[host.name].currentMoney = host.currentMoney;
+      hostData[host.name].securityLevel = host.securityLevel;
+      hostData[host.name].minSecurityLevel = host.minSecurityLevel;
+      hostData[host.name].ramPerBatch =
+        host.totalThreads * 2 + ns.getScriptRam("hgw-batch.js");
 
-      if (!hostData[host].prepared && Date.now() > hostData[host].retryAfter) {
-        if (currentMoney === maxMoney && securityLevel === minSecurityLevel) {
+      if (
+        !hostData[host.name].prepared &&
+        Date.now() > hostData[host.name].retryAfter
+      ) {
+        if (
+          host.currentMoney === host.money &&
+          host.securityLevel === host.minSecurityLevel
+        ) {
           ns.tprintf("INFO: batch-manager has successfully prepared %s", host);
-          hostData[host].prepared = true;
-        } else if (!hostData[host].currentlyPreparing) {
+          hostData[host.name].prepared = true;
+        } else if (!hostData[host.name].currentlyPreparing) {
           ns.tprintf("INFO: batch-manager is preparing %s", host);
 
-          const grows = growThreads(ns, host);
-          const weakens = weakenThreads(ns, host);
+          const grows = growThreadsFor(ns, host.name);
+          const weakens = weakenThreadsFor(ns, host.name);
           const ram = (grows + weakens) * 2 + ns.getScriptRam("prepare.js");
-          const pid = runWhereFits(ns, servers, "prepare.js", 1, ram, host);
+          const pid = runWhereFits(
+            ns,
+            servers,
+            "prepare.js",
+            1,
+            ram,
+            host.name
+          );
           if (pid) {
-            hostData[host].currentlyPreparing = true;
+            hostData[host.name].currentlyPreparing = true;
           } else {
             ns.tprintf(
               "WARN: batch-manager could not prepare %s, will try again in %.2f seconds",
               host,
-              hostData[host].retryMs / 1000
+              hostData[host.name].retryMs / 1000
             );
-            hostData[host].retryAfter = Date.now() + hostData[host].retryMs;
-            hostData[host].retryMs *= 2;
+            hostData[host.name].retryAfter =
+              Date.now() + hostData[host.name].retryMs;
+            hostData[host.name].retryMs *= 2;
             // cap the max retry to 1 minute
-            if (hostData[host].retryMs > 60000) {
-              hostData[host].retryMs = 60000;
+            if (hostData[host.name].retryMs > 60000) {
+              hostData[host.name].retryMs = 60000;
             }
           }
         }
