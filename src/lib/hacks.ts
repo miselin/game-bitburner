@@ -1,13 +1,13 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
-import { OVERGROW_FACTOR, MONEY_PERCENT_PER_HACK } from "./constants";
+import { OVERGROW_FACTOR, MONEY_PERCENT_PER_HACK } from './constants';
 
 export function growThreads(
   ns: NS,
   target: string,
   money: number,
   maxMoney: number,
-  cores?: number
+  cores?: number,
 ) {
   if (money === 0) {
     return 0;
@@ -56,7 +56,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
 
   // Formulas version, which only works if server is actually at lowest sec, max money
   // eslint-disable-next-line
-  if (ns.fileExists("Formulas.exe", "home")) {
+  if (ns.fileExists('Formulas.exe', 'home')) {
     const player = ns.getPlayer();
 
     // grab the server and fudge the numbers to make formulas.exe work
@@ -75,7 +75,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
       server,
       player,
       maxMoney,
-      cores
+      cores,
     );
 
     const growTime = ns.formulas.hacking.growTime(server, player);
@@ -83,7 +83,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
     server.moneyAvailable = maxMoney;
 
     const hacks = Math.floor(
-      MONEY_PERCENT_PER_HACK / ns.formulas.hacking.hackPercent(server, player)
+      MONEY_PERCENT_PER_HACK / ns.formulas.hacking.hackPercent(server, player),
     );
     const hacks2 = hacks;
 
@@ -120,7 +120,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
     target,
     Math.ceil(maxMoney * (1 - MONEY_PERCENT_PER_HACK)),
     maxMoney,
-    cores
+    cores,
   );
   // const hacks = Math.floor(ns.hackAnalyzeThreads(target, maxMoney * MONEY_PERCENT_PER_HACK));
 
@@ -128,7 +128,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
   // the money passed in currently, which could happen if we start a batch
   // while another batch has finished its hack. instead, we'll use math!
   const hacks = Math.floor(
-    ns.hackAnalyzeThreads(target, 1) * maxMoney * MONEY_PERCENT_PER_HACK
+    ns.hackAnalyzeThreads(target, 1) * maxMoney * MONEY_PERCENT_PER_HACK,
   );
   const hacks2 = ns.hackAnalyzeThreads(target, 1);
 
@@ -168,7 +168,7 @@ export function hacksNeededForPercent(ns: NS, target: string, percent: number) {
 export function hacksNeededForPercentFormulas(
   ns: NS,
   target: string,
-  percent: number
+  percent: number,
 ) {
   return (
     percent /
@@ -178,5 +178,5 @@ export function hacksNeededForPercentFormulas(
 }
 
 export function hasFormulas(ns: NS) {
-  return ns.fileExists("Formulas.exe", "home");
+  return ns.fileExists('Formulas.exe', 'home');
 }

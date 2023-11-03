@@ -1,4 +1,4 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 type Host = {
   name: string;
@@ -11,7 +11,7 @@ type Host = {
 
 function printHost(ns: NS, host: Host) {
   ns.tprintf(
-    "%12d: %s: %12d max money, %12d current money (%6.2f%%), %8.2f security (min %6.2f) - hacking level %d\n",
+    '%12d: %s: %12d max money, %12d current money (%6.2f%%), %8.2f security (min %6.2f) - hacking level %d\n',
     Date.now(),
     host.name,
     host.money,
@@ -19,14 +19,14 @@ function printHost(ns: NS, host: Host) {
     (host.currentMoney / host.money) * 100.0,
     host.securityLevel,
     host.minSecurityLevel,
-    host.level
+    host.level,
   );
 }
 
 export async function main(ns: NS) {
   const host = ns.args[0] as string;
   if (!host) {
-    ns.tprint("a host must be provided");
+    ns.tprint('a host must be provided');
     return;
   }
 
@@ -39,7 +39,7 @@ export async function main(ns: NS) {
     const minSecurityLevel = ns.getServerMinSecurityLevel(host);
 
     if (!ns.hasRootAccess(host)) {
-      ns.tprint("no root access");
+      ns.tprint('no root access');
       return;
     }
 

@@ -1,10 +1,10 @@
-import { NS } from "@ns";
-import { analyzeTarget } from "./lib/hacks";
-import { GAP, DEBUG } from "./lib/constants";
-import { allDone } from "./lib/run";
+import { NS } from '@ns';
+import { analyzeTarget } from './lib/hacks';
+import { GAP, DEBUG } from './lib/constants';
+import { allDone } from './lib/run';
 
 export async function main(ns: NS) {
-  ns.disableLog("ALL");
+  ns.disableLog('ALL');
 
   const target = ns.args[0] as string;
   const batch = ns.args[1] as number;
@@ -31,12 +31,12 @@ export async function main(ns: NS) {
 
   if (DEBUG) {
     ns.tprintf(
-      "BATCH %4d: we will need %.2f weaken threads after hack, %.2f weaken threads after grow, %.2f grow threads, and %.2f hack threads",
+      'BATCH %4d: we will need %.2f weaken threads after hack, %.2f weaken threads after grow, %.2f grow threads, and %.2f hack threads',
       batch,
       weakensAfterHack,
       weakensAfterGrow,
       grows,
-      hacks
+      hacks,
     );
   }
 
@@ -76,25 +76,25 @@ export async function main(ns: NS) {
   // first weaken
   if (DEBUG) {
     ns.printf(
-      "BATCH %4d: weaken0 %s (%d threads, %d seconds, %d -> %d)",
+      'BATCH %4d: weaken0 %s (%d threads, %d seconds, %d -> %d)',
       batch,
       target,
       threads.weaken0,
       weakenTime / 1000,
       startTimes.weaken0 / 1000,
-      deadlines.weaken0 / 1000
+      deadlines.weaken0 / 1000,
     );
   }
   pids.weaken0 = ns.run(
-    "weaken.js",
+    'weaken.js',
     threads.weaken0,
     target,
     startTimes.weaken0,
-    batch
+    batch,
   );
   if (pids.weaken0 === 0) {
     ns.print(
-      `failed to run weaken0 script for ${target} with ${threads.weaken0} threads!`
+      `failed to run weaken0 script for ${target} with ${threads.weaken0} threads!`,
     );
     return;
   }
@@ -102,25 +102,25 @@ export async function main(ns: NS) {
   // second weaken
   if (DEBUG) {
     ns.printf(
-      "BATCH %4d: weaken1 %s (%d threads, %d seconds, %d -> %d)",
+      'BATCH %4d: weaken1 %s (%d threads, %d seconds, %d -> %d)',
       batch,
       target,
       threads.weaken1,
       weakenTime / 1000,
       startTimes.weaken1 / 1000,
-      deadlines.weaken1 / 1000
+      deadlines.weaken1 / 1000,
     );
   }
   pids.weaken1 = ns.run(
-    "weaken.js",
+    'weaken.js',
     threads.weaken1,
     target,
     startTimes.weaken1,
-    batch
+    batch,
   );
   if (pids.weaken1 === 0) {
     ns.print(
-      `failed to run weaken1 script for ${target} with ${threads.weaken1} threads!`
+      `failed to run weaken1 script for ${target} with ${threads.weaken1} threads!`,
     );
     return;
   }
@@ -128,19 +128,19 @@ export async function main(ns: NS) {
   // grow
   if (DEBUG) {
     ns.printf(
-      "BATCH %4d: grow %s (%d threads, %d seconds, %d -> %d)",
+      'BATCH %4d: grow %s (%d threads, %d seconds, %d -> %d)',
       batch,
       target,
       threads.grow,
       growTime / 1000,
       startTimes.grow / 1000,
-      deadlines.grow / 1000
+      deadlines.grow / 1000,
     );
   }
-  pids.grow = ns.run("grow.js", threads.grow, target, startTimes.grow, batch);
+  pids.grow = ns.run('grow.js', threads.grow, target, startTimes.grow, batch);
   if (pids.grow === 0) {
     ns.print(
-      `failed to run grow script for ${target} with ${threads.grow} threads!`
+      `failed to run grow script for ${target} with ${threads.grow} threads!`,
     );
     return;
   }
@@ -149,19 +149,19 @@ export async function main(ns: NS) {
   if (!maybeDescyned) {
     if (DEBUG) {
       ns.printf(
-        "BATCH %4d: hack %s (%d threads, %d seconds, %d -> %d)",
+        'BATCH %4d: hack %s (%d threads, %d seconds, %d -> %d)',
         batch,
         target,
         threads.hack,
         hackTime / 1000,
         startTimes.hack / 1000,
-        deadlines.hack / 1000
+        deadlines.hack / 1000,
       );
     }
-    pids.hack = ns.run("hack.js", threads.hack, target, startTimes.hack, batch);
+    pids.hack = ns.run('hack.js', threads.hack, target, startTimes.hack, batch);
     if (pids.hack === 0) {
       ns.print(
-        `failed to run hack script for ${target} with ${threads.hack} threads!`
+        `failed to run hack script for ${target} with ${threads.hack} threads!`,
       );
       return;
     }
@@ -174,6 +174,6 @@ export async function main(ns: NS) {
   }
 
   if (DEBUG) {
-    ns.tprintf("BATCH %4d: %s batch complete", batch, target);
+    ns.tprintf('BATCH %4d: %s batch complete', batch, target);
   }
 }

@@ -1,4 +1,4 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 /**
  * Purchase hacknet nodes and upgrade them to an initially useful level
@@ -10,10 +10,10 @@ const TARGET_LEVEL = 25;
 export async function main(ns: NS) {
   // First, make sure we have 10 hacknet nodes
   while (ns.hacknet.numNodes() < 10) {
-    if (ns.getServerMoneyAvailable("home") > ns.hacknet.getPurchaseNodeCost()) {
+    if (ns.getServerMoneyAvailable('home') > ns.hacknet.getPurchaseNodeCost()) {
       ns.hacknet.purchaseNode();
 
-      ns.tprint("HACKNET: purchased node");
+      ns.tprint('HACKNET: purchased node');
     }
     await ns.sleep(1000);
   }
@@ -32,11 +32,11 @@ export async function main(ns: NS) {
       let level = stats.level;
 
       while (
-        ns.getServerMoneyAvailable("home") >
+        ns.getServerMoneyAvailable('home') >
           ns.hacknet.getLevelUpgradeCost(i, 1) &&
         level < TARGET_LEVEL
       ) {
-        ns.tprintf("HACKNET: upgraded node %d", i);
+        ns.tprintf('HACKNET: upgraded node %d', i);
         ns.hacknet.upgradeLevel(i, 1);
         level++;
       }
@@ -50,9 +50,9 @@ export async function main(ns: NS) {
   }
 
   // don't go too crazy with hacknet nodes until we get a few home upgrades
-  const homeRam = ns.getServerMaxRam("home");
+  const homeRam = ns.getServerMaxRam('home');
   if (homeRam > 128) {
-    ns.run("upgrade-hacknet-unbounded.js");
-    ns.run("maximize-hacknet-nodes.js");
+    ns.run('upgrade-hacknet-unbounded.js');
+    ns.run('maximize-hacknet-nodes.js');
   }
 }

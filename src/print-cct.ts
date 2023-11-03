@@ -1,4 +1,4 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 export async function main(ns: NS) {
   const filename = ns.args[0] as string;
@@ -8,7 +8,7 @@ export async function main(ns: NS) {
   const data = ns.codingcontract.getData(filename, host);
   const tries = ns.codingcontract.getNumTriesRemaining(filename, host);
 
-  ns.tprintf("Contract Type: %s, %d tries remain", contractType, tries);
-  ns.tprintf("Description: %s", desc);
-  ns.tprintf("Data: <<%v>>", data);
+  ns.tprintf('Contract Type: %s, %d tries remain', contractType, tries);
+  ns.tprintf('Description: %s', desc);
+  ns.tprintf('Data: <<%v>>', data);
 }

@@ -6,6 +6,7 @@
     "target": "esnext",
     "moduleResolution": "node",
     "noImplicitReturns": true,
+    "noImplicitAny": true,
     "noImplicitThis": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,

@@ -1,5 +1,5 @@
-import { NS } from "@ns";
-import { getAllHosts } from "./lib/hosts";
+import { NS } from '@ns';
+import { getAllHosts } from './lib/hosts';
 
 /**
  * Early game hack manager, just tries to maximize income without RAM for HWGW batching.
@@ -41,7 +41,7 @@ const RAM_PER_SCRIPT = 2;
 function getInitialHostState(ns: NS, machineList: Set<string>): State {
   const hosts: Array<Host> = [];
   machineList.forEach((host) => {
-    if (host === "home") {
+    if (host === 'home') {
       return;
     }
 
@@ -58,9 +58,9 @@ function getInitialHostState(ns: NS, machineList: Set<string>): State {
     }
 
     ns.printf(
-      "adding initial host %s with %d slots",
+      'adding initial host %s with %d slots',
       entry.host,
-      entry.slots.length
+      entry.slots.length,
     );
     hosts.push(entry);
   });
@@ -73,7 +73,7 @@ function getInitialHostState(ns: NS, machineList: Set<string>): State {
 
 function addNewlyFoundHosts(ns: NS, state: State, machineList: Set<string>) {
   machineList.forEach((host) => {
-    if (host === "home") {
+    if (host === 'home') {
       return;
     }
 
@@ -94,9 +94,9 @@ function addNewlyFoundHosts(ns: NS, state: State, machineList: Set<string>) {
     }
 
     ns.printf(
-      "adding newly found host %s with %d slots",
+      'adding newly found host %s with %d slots',
       entry.host,
-      entry.slots.length
+      entry.slots.length,
     );
     state.hosts.push(entry);
     state.machineList.add(host);
@@ -136,7 +136,7 @@ function runEverywhere(
   script: string,
   target: string,
   nthSlot: number,
-  totalSlots: number
+  totalSlots: number,
 ) {
   state.hosts.forEach((entry) => {
     for (let i = nthSlot; i < entry.slots.length; i += totalSlots) {
@@ -148,7 +148,7 @@ function runEverywhere(
         continue;
       }
 
-      ns.printf("running %s on %s (slot %d)", script, entry.host, i);
+      ns.printf('running %s on %s (slot %d)', script, entry.host, i);
 
       const pid = ns.exec(script, entry.host, 1, target, i);
       if (pid === 0) {
@@ -163,30 +163,30 @@ function runEverywhere(
 export async function main(ns: NS) {
   if (!ns.args[0]) {
     throw new Error(
-      "manager.js requires at least one argument, the target machine"
+      'manager.js requires at least one argument, the target machine',
     );
   }
 
-  if (typeof ns.args[0] !== "string") {
+  if (typeof ns.args[0] !== 'string') {
     throw new Error(
-      "usage: manager.js target [nth slot] [total parallel slots]"
+      'usage: manager.js target [nth slot] [total parallel slots]',
     );
   }
 
   if (
     ns.args[1] === undefined ||
-    (ns.args[1] !== undefined && typeof ns.args[1] !== "number")
+    (ns.args[1] !== undefined && typeof ns.args[1] !== 'number')
   ) {
     throw new Error(
-      "usage: manager.js target [nth slot] [total parallel slots]"
+      'usage: manager.js target [nth slot] [total parallel slots]',
     );
   }
   if (
     ns.args[2] === undefined ||
-    (ns.args[2] !== undefined && typeof ns.args[2] !== "number")
+    (ns.args[2] !== undefined && typeof ns.args[2] !== 'number')
   ) {
     throw new Error(
-      "usage: manager.js target [nth slot] [total parallel slots]"
+      'usage: manager.js target [nth slot] [total parallel slots]',
     );
   }
 
@@ -225,12 +225,12 @@ export async function main(ns: NS) {
     const targetMoney = ns.getServerMoneyAvailable(target);
 
     ns.printf(
-      "target %s: money %d/%d, security %d/%d",
+      'target %s: money %d/%d, security %d/%d',
       target,
       targetMoney,
       moneyThreshold,
       targetSecurity,
-      securityThreshold
+      securityThreshold,
     );
 
     // what do we want to do?
@@ -238,11 +238,11 @@ export async function main(ns: NS) {
     // 2. weaken the server if it's too secure, which will have happened while we grew it
     // 3. otherwise, hack!
     if (targetMoney < moneyThreshold) {
-      runEverywhere(ns, state, "grow.js", target, nthSlot, totalSlots);
+      runEverywhere(ns, state, 'grow.js', target, nthSlot, totalSlots);
     } else if (targetSecurity > securityThreshold) {
-      runEverywhere(ns, state, "weaken.js", target, nthSlot, totalSlots);
+      runEverywhere(ns, state, 'weaken.js', target, nthSlot, totalSlots);
     } else {
-      runEverywhere(ns, state, "hack.js", target, nthSlot, totalSlots);
+      runEverywhere(ns, state, 'hack.js', target, nthSlot, totalSlots);
     }
 
     await ns.sleep(5000);

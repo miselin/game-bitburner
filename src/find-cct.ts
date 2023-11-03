@@ -1,5 +1,5 @@
-import { NS } from "@ns";
-import { getAllHosts } from "./lib/hosts";
+import { NS } from '@ns';
+import { getAllHosts } from './lib/hosts';
 
 /**
  * Finds all coding contracts across all the machines in the network
@@ -7,9 +7,9 @@ import { getAllHosts } from "./lib/hosts";
 
 export async function main(ns: NS) {
   getAllHosts(ns).forEach((host) => {
-    const result = ns.ls(host, ".cct");
+    const result = ns.ls(host, '.cct');
     if (result.length > 0) {
-      ns.tprintf("found on %s: %v", host, result);
+      ns.tprintf('found on %s: %v', host, result);
     }
   });
 }

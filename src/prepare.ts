@@ -27,11 +27,11 @@ This handles level-ups during the batch!
 
 ** need to get the server to min security and max money before batching! **
  */
-import { NS } from "@ns";
-import { growThreadsFor, weakenThreadsFor } from "./lib/hacks";
+import { NS } from '@ns';
+import { growThreadsFor, weakenThreadsFor } from './lib/hacks';
 
 export async function main(ns: NS) {
-  ns.disableLog("ALL");
+  ns.disableLog('ALL');
 
   const target = ns.args[0] as string;
 
@@ -43,9 +43,9 @@ export async function main(ns: NS) {
     const maxThreads = Math.floor(maxRam / 2);
     if (maxThreads < 0) {
       ns.printf(
-        "ERROR: PREP: maxThreads was < 0 on %s for target %s!",
+        'ERROR: PREP: maxThreads was < 0 on %s for target %s!',
         ns.getHostname(),
-        target
+        target,
       );
       return;
     }
@@ -68,32 +68,32 @@ export async function main(ns: NS) {
     }
 
     if (maxMoney === availableMoney && minSecurity === currentSecurity) {
-      ns.printf("PREP: server %s is prepared", target);
+      ns.printf('PREP: server %s is prepared', target);
       break;
     }
 
     if (grows === 0 && weakens === 0) {
       ns.printf(
-        "PREP: server %s is prepared, unexpected result (%.2f %.2f %.2f %.2f)",
+        'PREP: server %s is prepared, unexpected result (%.2f %.2f %.2f %.2f)',
         target,
         maxMoney,
         availableMoney,
         minSecurity,
-        currentSecurity
+        currentSecurity,
       );
       break;
     }
 
     if (weakens > 0) {
       ns.printf(
-        "PREP: weakening %s with %d threads (wanted %d threads)",
+        'PREP: weakening %s with %d threads (wanted %d threads)',
         target,
         weakens,
-        origWeakens
+        origWeakens,
       );
-      const weaken = ns.run("weaken.js", weakens, target);
+      const weaken = ns.run('weaken.js', weakens, target);
       if (weaken === 0) {
-        ns.printf("PREP: server %s failed to weaken", target);
+        ns.printf('PREP: server %s failed to weaken', target);
         return;
       }
       while (ns.isRunning(weaken)) {
@@ -103,14 +103,14 @@ export async function main(ns: NS) {
 
     if (grows > 0) {
       ns.printf(
-        "PREP: growing %s with %d threads (wanted %d threads)",
+        'PREP: growing %s with %d threads (wanted %d threads)',
         target,
         grows,
-        origGrows
+        origGrows,
       );
-      const grow = ns.run("grow.js", grows, target);
+      const grow = ns.run('grow.js', grows, target);
       if (grow === 0) {
-        ns.printf("PREP: server %s failed to grow", target);
+        ns.printf('PREP: server %s failed to grow', target);
         return;
       }
       while (ns.isRunning(grow)) {

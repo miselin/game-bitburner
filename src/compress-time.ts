@@ -1,6 +1,4 @@
-import { NS } from "@ns";
-
-export async function main(ns: NS) {
+export async function main() {
   // gets the compress time exploit achievement
   // @ts-expect-error monkey patching
   if (!performance.__MONKEY_PATCHED__) {

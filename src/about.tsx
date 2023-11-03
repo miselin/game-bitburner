@@ -1,6 +1,6 @@
-import { NS, AutocompleteData } from "@ns";
-import React from "./lib/react";
-import { analyzeTarget } from "./lib/hacks";
+import { NS, AutocompleteData } from '@ns';
+import React from './lib/react';
+import { analyzeTarget } from './lib/hacks';
 
 export function autocomplete(data: AutocompleteData) {
   return [...data.servers];
@@ -15,7 +15,7 @@ function Analysis({
     <div>
       <table>
         <tr>
-          <th colSpan={2} style={{ textAlign: "center" }}>
+          <th colSpan={2} style={{ textAlign: 'center' }}>
             <h3>Analysis of {analysis.target}</h3>
           </th>
         </tr>
@@ -69,7 +69,7 @@ function Analysis({
 export async function main(ns: NS) {
   const host = ns.args[0] as string;
   if (!host) {
-    ns.tprint("a host must be provided");
+    ns.tprint('a host must be provided');
     return;
   }
 

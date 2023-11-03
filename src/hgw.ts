@@ -1,9 +1,9 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 import {
   growThreadsFor,
   hacksNeededForPercent,
   weakenThreadsFor,
-} from "./lib/hacks";
+} from './lib/hacks';
 
 // at this percent, we'll hack instead of grow
 const MONEY_THRESHOLD = 0.9;
@@ -16,34 +16,34 @@ const MINIMUM_REMAINING_MONEY = 0.8;
 const PERCENT_HACK = (MONEY_THRESHOLD - MINIMUM_REMAINING_MONEY) * 100;
 
 function printTargetStats(ns: NS, target: string) {
-  ns.tprintf("\n== HGW analyze %s ==", target);
+  ns.tprintf('\n== HGW analyze %s ==', target);
 
   const growthThreads = growThreadsFor(ns, target);
 
   ns.tprintf(
-    "- need %d grow threads (%.2f seconds)",
+    '- need %d grow threads (%.2f seconds)',
     growthThreads,
-    ns.getGrowTime(target) / 1000
+    ns.getGrowTime(target) / 1000,
   );
 
   const threadsToWeaken = weakenThreadsFor(ns, target);
 
   ns.tprintf(
-    "- need %d weaken threads (%.2f seconds)",
+    '- need %d weaken threads (%.2f seconds)',
     threadsToWeaken,
-    ns.getWeakenTime(target) / 1000
+    ns.getWeakenTime(target) / 1000,
   );
 
   const hacksForFiftyPercent = hacksNeededForPercent(ns, target, PERCENT_HACK);
 
   ns.tprintf(
-    "- need %d hack threads to take %d%% (%.2f seconds)",
+    '- need %d hack threads to take %d%% (%.2f seconds)',
     hacksForFiftyPercent,
     PERCENT_HACK,
-    ns.getHackTime(target) / 1000
+    ns.getHackTime(target) / 1000,
   );
 
-  ns.tprintf("\n");
+  ns.tprintf('\n');
 }
 
 function printServerStats(ns: NS, servers: Array<Server>) {
@@ -53,8 +53,8 @@ function printServerStats(ns: NS, servers: Array<Server>) {
       .reduce((accum, v) => accum + v, 0) / 2;
 
   ns.tprintf(
-    "\n== HGW sees %d threads across all purchased servers! ==\n\n",
-    totalThreads
+    '\n== HGW sees %d threads across all purchased servers! ==\n\n',
+    totalThreads,
   );
 }
 
@@ -66,7 +66,7 @@ type Server = {
 function ramToThreads(ns: NS, host: string, withoutUsed?: boolean) {
   let ram =
     ns.getServerMaxRam(host) - (withoutUsed ? ns.getServerUsedRam(host) : 0);
-  if (host === "home") {
+  if (host === 'home') {
     // give ourselves some room to run our scripts
     ram -= 32;
   }
@@ -77,7 +77,7 @@ function ramToThreads(ns: NS, host: string, withoutUsed?: boolean) {
 }
 
 function loadServers(ns: NS) {
-  const servers = ["home", ...ns.getPurchasedServers()];
+  const servers = ['home', ...ns.getPurchasedServers()];
   return servers.map((name): Server => {
     return {
       name,
@@ -140,10 +140,10 @@ async function runAll(
 
   if (i < maxThreads) {
     ns.tprintf(
-      "HGW %s: ** shortfall on thread count: %d < %d, another iteration will be needed",
+      'HGW %s: ** shortfall on thread count: %d < %d, another iteration will be needed',
       target,
       i,
-      maxThreads
+      maxThreads,
     );
   }
 
@@ -156,7 +156,7 @@ async function runAll(
 }
 
 export async function main(ns: NS) {
-  ns.disableLog("ALL");
+  ns.disableLog('ALL');
 
   const target = ns.args[0] as string;
 
@@ -182,43 +182,43 @@ export async function main(ns: NS) {
       const threadsToHack = hacksNeededForPercent(ns, target, PERCENT_HACK);
 
       if (needsWeaken > 0) {
-        ns.tprintf("HGW %s: weakening with %d threads...", target, needsWeaken);
+        ns.tprintf('HGW %s: weakening with %d threads...', target, needsWeaken);
         const totalRan = await runAll(
           ns,
           target,
           servers,
-          "weaken.js",
+          'weaken.js',
           needsWeaken,
-          target
+          target,
         );
-        ns.tprintf("HGW %s: %d weaken threads completed", target, totalRan);
+        ns.tprintf('HGW %s: %d weaken threads completed', target, totalRan);
         continue;
       }
 
       if (needsGrow > 0) {
-        ns.tprintf("HGW %s: growing with %d threads...", target, needsGrow);
+        ns.tprintf('HGW %s: growing with %d threads...', target, needsGrow);
         const totalRan = await runAll(
           ns,
           target,
           servers,
-          "grow.js",
+          'grow.js',
           needsGrow,
-          target
+          target,
         );
-        ns.tprintf("HGW %s: %d grow threads completed", target, totalRan);
+        ns.tprintf('HGW %s: %d grow threads completed', target, totalRan);
         continue;
       }
 
-      ns.tprintf("HGW %s: hacking with %d threads...", target, threadsToHack);
+      ns.tprintf('HGW %s: hacking with %d threads...', target, threadsToHack);
       const totalHacks = await runAll(
         ns,
         target,
         servers,
-        "hack.js",
+        'hack.js',
         threadsToHack,
-        target
+        target,
       );
-      ns.tprintf("HGW %s: %d hack threads completed", target, totalHacks);
+      ns.tprintf('HGW %s: %d hack threads completed', target, totalHacks);
 
       break;
     }

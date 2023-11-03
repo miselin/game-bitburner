@@ -1,7 +1,7 @@
-import { NS } from "@ns";
-import { Host, analyzeHackableHosts } from "./lib/hosts";
-import React from "./lib/react";
-import { TableCell, TableHeader } from "./lib/components";
+import { NS } from '@ns';
+import { Host, analyzeHackableHosts } from './lib/hosts';
+import React from './lib/react';
+import { TableCell, TableHeader } from './lib/components';
 
 const HostRow = ({ n, host }: { n: number; host: Host }) => {
   return (
@@ -26,7 +26,7 @@ const HostTable = ({ hosts }: { hosts: Array<Host> }) => {
   return (
     <table
       style={{
-        borderCollapse: "collapse",
+        borderCollapse: 'collapse',
       }}
     >
       <tr>

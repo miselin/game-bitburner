@@ -1,16 +1,16 @@
-import { NS, AutocompleteData } from "@ns";
+import { NS, AutocompleteData } from '@ns';
 
-import { analyzeTarget } from "./lib/hacks";
-import { GAP } from "./lib/constants";
-import { allDone } from "./lib/run";
-import { prepare } from "./lib/hosts";
+import { analyzeTarget } from './lib/hacks';
+import { GAP } from './lib/constants';
+import { allDone } from './lib/run';
+import { prepare } from './lib/hosts';
 
 export function autocomplete(data: AutocompleteData) {
   return [...data.servers];
 }
 
 export async function main(ns: NS) {
-  ns.disableLog("ALL");
+  ns.disableLog('ALL');
 
   const target = ns.args[0] as string;
 
@@ -29,7 +29,7 @@ export async function main(ns: NS) {
     const { totalThreads } = analyzeTarget(ns, target, cores);
 
     const neededRamPerBatch =
-      totalThreads * 2 + ns.getScriptRam("hgw-batch.js");
+      totalThreads * 2 + ns.getScriptRam('hgw-batch.js');
 
     // server RAM available
     const availableRam =
@@ -40,10 +40,10 @@ export async function main(ns: NS) {
 
     if (maxBatches === 0) {
       ns.printf(
-        "RUNB: %s, not enough RAM (need %.2f per batch, only have %.2f!)...",
+        'RUNB: %s, not enough RAM (need %.2f per batch, only have %.2f!)...',
         target,
         neededRamPerBatch,
-        availableRam
+        availableRam,
       );
       await ns.sleep(10000);
       continue;
@@ -52,19 +52,19 @@ export async function main(ns: NS) {
     ns.printf(
       "RUNB: %s, this server's RAM can run %.2f batches concurrently",
       target,
-      maxBatches
+      maxBatches,
     );
 
     ns.printf(
-      "RUNB: %s, running batch %d of %d concurrent batches",
+      'RUNB: %s, running batch %d of %d concurrent batches',
       target,
       batch++,
-      maxBatches
+      maxBatches,
     );
 
     const pids = [];
     for (let i = 0; i < maxBatches; i++) {
-      const pid = ns.run("hgw-batch.js", 1, target, i);
+      const pid = ns.run('hgw-batch.js', 1, target, i);
       if (!pid) {
         continue;
       }
@@ -73,7 +73,7 @@ export async function main(ns: NS) {
     }
 
     if (pids.length === 0) {
-      ns.printf("RUNB: %s, no batches started? aborting!");
+      ns.printf('RUNB: %s, no batches started? aborting!');
       return;
     }
 

@@ -1,5 +1,5 @@
-import { NS } from "@ns";
-import { DEBUG } from "./constants";
+import { NS } from '@ns';
+import { DEBUG } from './constants';
 
 export type RunnableServer = {
   hostname: string;
@@ -10,7 +10,7 @@ export type RunnableServer = {
 
 // get servers, sorted by amount of RAM available
 export function getRunnableServers(ns: NS) {
-  const servers = ["home", ...ns.getPurchasedServers()].map(
+  const servers = ['home', ...ns.getPurchasedServers()].map(
     (s): RunnableServer => {
       return {
         hostname: s,
@@ -18,7 +18,7 @@ export function getRunnableServers(ns: NS) {
         maxRam: ns.getServerMaxRam(s),
         ramUsed: ns.getServerUsedRam(s),
       };
-    }
+    },
   );
   servers.sort((a, b) => {
     const availA = a.maxRam - a.ramUsed;
@@ -31,17 +31,17 @@ export function getRunnableServers(ns: NS) {
 export function findWhereFits(
   ns: NS,
   servers: Array<RunnableServer>,
-  totalRam: number
+  totalRam: number,
 ): RunnableServer | null {
   for (let i = 0; i < servers.length; i++) {
     const availRam = servers[i].maxRam - servers[i].ramUsed;
     if (DEBUG) {
       ns.tprintf(
-        "checking server %s: %.2f vs %.2f < %.2f?",
+        'checking server %s: %.2f vs %.2f < %.2f?',
         servers[i].hostname,
         servers[i].maxRam,
         servers[i].ramUsed,
-        totalRam
+        totalRam,
       );
     }
     if (availRam < totalRam) {
@@ -66,9 +66,9 @@ export function runWhereFits(
   const server = findWhereFits(ns, servers, totalRam);
   if (server === null) {
     ns.printf(
-      "WARN: script %s needing %d RAM does not fit anywhere",
+      'WARN: script %s needing %d RAM does not fit anywhere',
       script,
-      totalRam
+      totalRam,
     );
     return 0;
   }
@@ -78,27 +78,27 @@ export function runWhereFits(
 
 export async function killallOnServer(ns: NS, server: string) {
   // make sure we're the only show in town
-  while (ns.scriptKill("run-batches.js", server)) {
+  while (ns.scriptKill('run-batches.js', server)) {
     await ns.sleep(1000);
   }
 
-  while (ns.scriptKill("hgw-batch.js", server)) {
+  while (ns.scriptKill('hgw-batch.js', server)) {
     await ns.sleep(1000);
   }
 
-  while (ns.scriptKill("prepare.js", server)) {
+  while (ns.scriptKill('prepare.js', server)) {
     await ns.sleep(1000);
   }
 
-  while (ns.scriptKill("grow.js", server)) {
+  while (ns.scriptKill('grow.js', server)) {
     await ns.sleep(1000);
   }
 
-  while (ns.scriptKill("hack.js", server)) {
+  while (ns.scriptKill('hack.js', server)) {
     await ns.sleep(1000);
   }
 
-  while (ns.scriptKill("weaken.js", server)) {
+  while (ns.scriptKill('weaken.js', server)) {
     await ns.sleep(1000);
   }
 }

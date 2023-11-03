@@ -1,6 +1,6 @@
-import { NS } from "@ns";
-import React from "./lib/react";
-import { TableCell, TableHeader } from "./lib/components";
+import { NS } from '@ns';
+import React from './lib/react';
+import { TableCell, TableHeader } from './lib/components';
 
 type Host = {
   name: string;
@@ -21,7 +21,7 @@ const HostTable = ({ hosts }: { hosts: Array<Host> }) => {
   return (
     <table
       style={{
-        borderCollapse: "collapse",
+        borderCollapse: 'collapse',
       }}
     >
       <tr>
@@ -38,7 +38,7 @@ const HostTable = ({ hosts }: { hosts: Array<Host> }) => {
 
 export async function main(ns: NS) {
   // enumerate all the potential machines out there
-  const machines = ["home", ...ns.getPurchasedServers()];
+  const machines = ['home', ...ns.getPurchasedServers()];
 
   const hosts: Array<Host> = [];
   machines.forEach((host) => {

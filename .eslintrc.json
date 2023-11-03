@@ -6,7 +6,7 @@
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
-        "prettier"
+        "plugin:prettier/recommended"
     ],
     "overrides": [
     ],
@@ -25,5 +25,10 @@
         "NetscriptDefinitions.d.ts"
     ],
     "rules": {
+        "prettier/prettier": "off",
+        "eqeqeq": [
+            "error",
+            "always"
+        ]
     }
 }

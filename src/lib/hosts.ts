@@ -1,6 +1,6 @@
-import { NS } from "@ns";
-import { analyzeTarget } from "./hacks";
-import { GAP } from "./constants";
+import { NS } from '@ns';
+import { analyzeTarget } from './hacks';
+import { GAP } from './constants';
 
 export type Host = {
   name: string;
@@ -21,10 +21,10 @@ export function scanHost(
   ns: NS,
   host: string,
   machineList: Set<string>,
-  maxDepth?: number
+  maxDepth?: number,
 ) {
   if (maxDepth !== undefined && maxDepth === 0) {
-    ns.tprint("ERROR: scanHost: recursion depth exceeded");
+    ns.tprint('ERROR: scanHost: recursion depth exceeded');
     return;
   }
 
@@ -50,8 +50,8 @@ export function hasRootP(ns: NS) {
 }
 
 export function getAllHosts(ns: NS) {
-  const machines = new Set(["home"]);
-  scanHost(ns, "home", machines);
+  const machines = new Set(['home']);
+  scanHost(ns, 'home', machines);
   return [...machines];
 }
 /**
@@ -93,7 +93,7 @@ export function analyzeHackableHosts(ns: NS) {
         securityLevel,
         minSecurityLevel,
         totalThreads,
-        ramPerBatch: totalThreads * 2 + ns.getScriptRam("hgw-batch.js"),
+        ramPerBatch: totalThreads * 2 + ns.getScriptRam('hgw-batch.js'),
         moneyPerMs: (maxMoney * 0.5) / (weakenTime + 2 * GAP),
       };
     })
@@ -104,13 +104,13 @@ export function analyzeHackableHosts(ns: NS) {
 
 export function getTotalPurchasedThreads(ns: NS) {
   return (
-    ["home", ...ns.getPurchasedServers()]
+    ['home', ...ns.getPurchasedServers()]
       .map((server) => ns.getServerMaxRam(server))
       .reduce((accum, v) => accum + v, 0) / 2
   );
 }
 
 export async function prepare(ns: NS, target: string) {
-  const pid = ns.run("prepare.js", 1, target);
+  const pid = ns.run('prepare.js', 1, target);
   while (ns.isRunning(pid)) await ns.sleep(1000);
 }

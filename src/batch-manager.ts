@@ -1,9 +1,9 @@
-import { NS } from "@ns";
-import { GAP } from "./lib/constants";
-import { analyzeHackableHosts } from "./lib/hosts";
-import { getRunnableServers, killallOnServer, runWhereFits } from "./lib/run";
-import type { Host } from "./lib/hosts";
-import { growThreadsFor, weakenThreadsFor } from "./lib/hacks";
+import { NS } from '@ns';
+import { GAP } from './lib/constants';
+import { analyzeHackableHosts } from './lib/hosts';
+import { getRunnableServers, killallOnServer, runWhereFits } from './lib/run';
+import type { Host } from './lib/hosts';
+import { growThreadsFor, weakenThreadsFor } from './lib/hacks';
 
 type BatchHost = {
   prepared: boolean;
@@ -13,7 +13,7 @@ type BatchHost = {
 } & Host;
 
 export async function main(ns: NS) {
-  ns.disableLog("ALL");
+  ns.disableLog('ALL');
 
   // General algo, looping forever
   // 1. Check targets
@@ -51,7 +51,7 @@ export async function main(ns: NS) {
       hostData[host.name].securityLevel = host.securityLevel;
       hostData[host.name].minSecurityLevel = host.minSecurityLevel;
       hostData[host.name].ramPerBatch =
-        host.totalThreads * 2 + ns.getScriptRam("hgw-batch.js");
+        host.totalThreads * 2 + ns.getScriptRam('hgw-batch.js');
 
       if (
         !hostData[host.name].prepared &&
@@ -61,29 +61,29 @@ export async function main(ns: NS) {
           host.currentMoney === host.money &&
           host.securityLevel === host.minSecurityLevel
         ) {
-          ns.tprintf("INFO: batch-manager has successfully prepared %s", host);
+          ns.tprintf('INFO: batch-manager has successfully prepared %s', host);
           hostData[host.name].prepared = true;
         } else if (!hostData[host.name].currentlyPreparing) {
-          ns.tprintf("INFO: batch-manager is preparing %s", host);
+          ns.tprintf('INFO: batch-manager is preparing %s', host);
 
           const grows = growThreadsFor(ns, host.name);
           const weakens = weakenThreadsFor(ns, host.name);
-          const ram = (grows + weakens) * 2 + ns.getScriptRam("prepare.js");
+          const ram = (grows + weakens) * 2 + ns.getScriptRam('prepare.js');
           const pid = runWhereFits(
             ns,
             servers,
-            "prepare.js",
+            'prepare.js',
             1,
             ram,
-            host.name
+            host.name,
           );
           if (pid) {
             hostData[host.name].currentlyPreparing = true;
           } else {
             ns.tprintf(
-              "WARN: batch-manager could not prepare %s, will try again in %.2f seconds",
+              'WARN: batch-manager could not prepare %s, will try again in %.2f seconds',
               host,
-              hostData[host.name].retryMs / 1000
+              hostData[host.name].retryMs / 1000,
             );
             hostData[host.name].retryAfter =
               Date.now() + hostData[host.name].retryMs;
@@ -107,11 +107,11 @@ export async function main(ns: NS) {
       const pid = runWhereFits(
         ns,
         servers,
-        "hgw-batch.js",
+        'hgw-batch.js',
         1,
         candidateHosts[i].ramPerBatch,
         candidateHosts[i].name,
-        batch++
+        batch++,
       );
 
       if (pid > 0) {

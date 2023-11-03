@@ -7,7 +7,9 @@
     "watch:remote": "bitburner-filesync",
     "watch:init": "node build/init.js",
     "watch:all": "concurrently npm:watch:transpile npm:watch:local npm:watch:remote",
-    "watch": "npm run watch:init && npm run watch:all"
+    "watch": "npm run watch:init && npm run watch:all",
+    "format": "prettier --write src/**/*.{jsx,js,ts,tsx}",
+    "lint": "eslint src/"
   },
   "author": "hydroflame, Hoekstraa, based on work by SlyCedix",
   "devDependencies": {
@@ -21,10 +23,15 @@
     "esbuild": "^0.19.5",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "fast-glob": "^3.2.12",
     "prettier": "3.0.3",
     "sync-directory": "^5.1.7",
     "terser": "^5.24.0",
     "typescript": "^4.7.4"
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "singleQuote": true
   }
 }

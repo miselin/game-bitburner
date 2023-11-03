@@ -1,5 +1,5 @@
-import { NS } from "@ns";
-import { getAllHosts, hasRootP } from "./lib/hosts";
+import { NS } from '@ns';
+import { getAllHosts, hasRootP } from './lib/hosts';
 
 /**
  * Loop forever, trying to gain access to machines that we don't yet have root on.
@@ -19,7 +19,7 @@ export async function main(ns: NS) {
           ns.httpworm(host);
           ns.sqlinject(host);
         } catch {
-          console.error("failed - probably do not yet have the program");
+          console.error('failed - probably do not yet have the program');
         }
 
         try {
@@ -33,9 +33,9 @@ export async function main(ns: NS) {
           return;
         }
 
-        ns.scp(["hack.js", "grow.js", "weaken.js"], host);
+        ns.scp(['hack.js', 'grow.js', 'weaken.js'], host);
 
-        ns.tprintf("GAIN: acquired root access to %s", host);
+        ns.tprintf('GAIN: acquired root access to %s', host);
       });
 
     await ns.sleep(10000);

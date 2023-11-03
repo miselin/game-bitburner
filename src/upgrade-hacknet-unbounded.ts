@@ -1,4 +1,4 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 /**
  * Upgrade the hacknet node RAM/CPUs (it's expected they're at level 100 already)
@@ -13,7 +13,7 @@ export async function main(ns: NS) {
     let atMax = 0;
     for (let i = 0; i < ns.hacknet.numNodes(); i++) {
       if (
-        ns.getServerMoneyAvailable("home") >
+        ns.getServerMoneyAvailable('home') >
         ns.hacknet.getLevelUpgradeCost(i, 1)
       ) {
         if (!ns.hacknet.upgradeLevel(i, 1)) {
@@ -24,7 +24,7 @@ export async function main(ns: NS) {
       }
 
       if (
-        ns.getServerMoneyAvailable("home") > ns.hacknet.getCoreUpgradeCost(i, 1)
+        ns.getServerMoneyAvailable('home') > ns.hacknet.getCoreUpgradeCost(i, 1)
       ) {
         if (!ns.hacknet.upgradeCore(i, 1)) {
           atMax++;
@@ -34,7 +34,7 @@ export async function main(ns: NS) {
       }
 
       if (
-        ns.getServerMoneyAvailable("home") > ns.hacknet.getRamUpgradeCost(i, 1)
+        ns.getServerMoneyAvailable('home') > ns.hacknet.getRamUpgradeCost(i, 1)
       ) {
         if (!ns.hacknet.upgradeRam(i, 1)) {
           atMax++;

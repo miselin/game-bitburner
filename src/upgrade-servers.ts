@@ -1,4 +1,4 @@
-import { NS } from "@ns";
+import { NS } from '@ns';
 
 /**
  * Upgrade servers that we already own to max RAM.
@@ -17,13 +17,13 @@ export async function main(ns: NS) {
         if (ns.getServerMaxRam(servers[i]) < targetRam) {
           stillNeedingUpdate++;
 
-          ns.printf("want to upgrade %s if we have enough money", servers[i]);
+          ns.printf('want to upgrade %s if we have enough money', servers[i]);
 
           if (
-            ns.getServerMoneyAvailable("home") >
+            ns.getServerMoneyAvailable('home') >
             ns.getPurchasedServerUpgradeCost(servers[i], targetRam)
           ) {
-            ns.tprintf("UPGR: upgrading %s to %dGB", servers[i], targetRam);
+            ns.tprintf('UPGR: upgrading %s to %dGB', servers[i], targetRam);
             ns.upgradePurchasedServer(servers[i], targetRam);
           }
         }
@@ -46,6 +46,6 @@ export async function main(ns: NS) {
       return;
     }
 
-    ns.printf("increased target RAM for all servers to %d", targetRam);
+    ns.printf('increased target RAM for all servers to %d', targetRam);
   }
 }
