@@ -49,6 +49,16 @@ export function hasRootP(ns: NS) {
   return (host: string) => ns.hasRootAccess(host);
 }
 
+/**
+ * Returns a predicate function for use to filter()
+ * machine lists to those that do not have root access
+ * @param ns NS object
+ * @returns a closure that can be passed to filter()
+ */
+export function hasNoRootP(ns: NS) {
+  return (host: string) => !ns.hasRootAccess(host);
+}
+
 export function getAllHosts(ns: NS) {
   const machines = new Set(['home']);
   scanHost(ns, 'home', machines);

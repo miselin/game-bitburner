@@ -8,11 +8,11 @@ import { NS } from '@ns';
 
 export async function main(ns: NS) {
   let player = ns.getPlayer();
-  if (player.skills.hacking < 50) {
+  if (player.skills.hacking < 20) {
     ns.tprint(
-      'Your hacking skill is not yet 50. Study up, spin-up will continue once hacking level hits 50.',
+      'Your hacking skill is not yet 20. Study up, spin-up will continue once hacking level hits 20.',
     );
-    while (player.skills.hacking < 50) {
+    while (player.skills.hacking < 20) {
       await ns.sleep(1000);
       player = ns.getPlayer();
     }
@@ -44,7 +44,7 @@ export async function main(ns: NS) {
 
   if (homeRam < 128) {
     // low RAM, use the cheap manager
-    ns.run('manager.js', 1, 'joesguns', 0, 1);
+    ns.run('run-managers.js');
   } else {
     // enough RAM to kick off the HWGW batch manager!
     ns.run('batch-manager.js');
