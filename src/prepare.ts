@@ -99,6 +99,11 @@ export async function main(ns: NS) {
       while (ns.isRunning(weaken)) {
         await ns.sleep(1000);
       }
+
+      if (weakens < origWeakens) {
+        // keep weakening - don't fall through to do a grow
+        continue;
+      }
     }
 
     if (grows > 0) {

@@ -6,14 +6,10 @@ export async function main(ns: NS) {
   if (typeof ns.args[0] !== 'string') {
     throw new Error('requires a string');
   }
-  if (ns.args[1]) {
-    if (typeof ns.args[1] !== 'number') {
-      throw new Error('requires a number');
-    }
-    await ns.sleep(ns.args[1]);
-  }
   const before = Date.now();
-  const amount = await ns.hack(ns.args[0]);
+  const amount = await ns.hack(ns.args[0], {
+    additionalMsec: ns.args[1] !== undefined ? (ns.args[1] as number) : 0,
+  });
   const after = Date.now();
   if (LOG) {
     let batch = -1;

@@ -6,10 +6,7 @@ import { NS } from '@ns';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  // in early game, only buy servers if they're bigger than home
-  // that gives us money to upgrade home which is a better investment for my set of scripts
-  const homeRam = ns.getServerMaxRam('home');
-  const ram = homeRam > 512 ? 512 : 128;
+  const ram = 512;
 
   // eslint-disable-next-line
   while (true) {

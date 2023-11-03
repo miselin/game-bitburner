@@ -41,11 +41,8 @@ const RAM_PER_SCRIPT = 2;
 function getInitialHostState(ns: NS, machineList: Set<string>): State {
   const hosts: Array<Host> = [];
   machineList.forEach((host) => {
-    if (host === 'home') {
-      return;
-    }
-
-    const ram = ns.getServerMaxRam(host);
+    const ramAddend = host === 'home' ? -128 : 0;
+    const ram = ns.getServerMaxRam(host) + ramAddend;
 
     const entry: Host = {
       host,
@@ -73,15 +70,12 @@ function getInitialHostState(ns: NS, machineList: Set<string>): State {
 
 function addNewlyFoundHosts(ns: NS, state: State, machineList: Set<string>) {
   machineList.forEach((host) => {
-    if (host === 'home') {
-      return;
-    }
-
     if (state.machineList.has(host)) {
       return;
     }
 
-    const ram = ns.getServerMaxRam(host);
+    const ramAddend = host === 'home' ? -128 : 0;
+    const ram = ns.getServerMaxRam(host) + ramAddend;
 
     const entry: Host = {
       host,
@@ -105,7 +99,8 @@ function addNewlyFoundHosts(ns: NS, state: State, machineList: Set<string>) {
 
 function updateHostState(ns: NS, state: State) {
   state.hosts.forEach((entry) => {
-    const currentRam = ns.getServerMaxRam(entry.host);
+    const ramAddend = entry.host === 'home' ? -128 : 0;
+    const currentRam = ns.getServerMaxRam(entry.host) + ramAddend;
     if (currentRam > entry.ram) {
       // add new slots, the server upgraded
       for (let i = entry.slots.length; i < currentRam; i += RAM_PER_SCRIPT) {
@@ -150,7 +145,7 @@ function runEverywhere(
 
       ns.printf('running %s on %s (slot %d)', script, entry.host, i);
 
-      const pid = ns.exec(script, entry.host, 1, target, i);
+      const pid = ns.exec(script, entry.host, 1, target);
       if (pid === 0) {
         continue;
       }
@@ -237,10 +232,10 @@ export async function main(ns: NS) {
     // 1. grow the server if it's below our threshold
     // 2. weaken the server if it's too secure, which will have happened while we grew it
     // 3. otherwise, hack!
-    if (targetMoney < moneyThreshold) {
-      runEverywhere(ns, state, 'grow.js', target, nthSlot, totalSlots);
-    } else if (targetSecurity > securityThreshold) {
+    if (targetSecurity > securityThreshold) {
       runEverywhere(ns, state, 'weaken.js', target, nthSlot, totalSlots);
+    } else if (targetMoney < moneyThreshold) {
+      runEverywhere(ns, state, 'grow.js', target, nthSlot, totalSlots);
     } else {
       runEverywhere(ns, state, 'hack.js', target, nthSlot, totalSlots);
     }

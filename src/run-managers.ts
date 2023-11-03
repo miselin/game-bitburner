@@ -6,7 +6,7 @@ export async function main(ns: NS) {
   // early on, just hit one server with _everything_
   // that has the best profitability. then later we can shard!
   // we really need to have all our purchased servers first, anyway
-  if (ns.getPlayer().skills.hacking < 100 && numServers < 25) {
+  if (ns.getPlayer().skills.hacking < 250 || numServers === 0) {
     ns.run('manager.js', 1, 'joesguns', 0, 1);
   } else {
     // divide into chunks of 4 slots to hit 4 different targets simultaneously
