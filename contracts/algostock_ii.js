@@ -1,0 +1,11 @@
+/*
+Contract Type: Algorithmic Stock Trader II, 10 tries remain
+Description: You are given the following array of stock prices (which are numbers) where the i-th element represents the stock price on day i:
+
+ 157,19,164,57,145,184,170,42,118,149,137,146,10,84,46,23,133,115,97,54,147,49
+
+ Determine the maximum possible profit you can earn using as many transactions as you'd like. A transaction is defined as buying and then selling one share of the stock. Note that you cannot engage in multiple transactions at once. In other words, you must sell the stock before you buy it again.
+
+ If no profit can be made, then the answer should be 0
+Data: <<157,19,164,57,145,184,170,42,118,149,137,146,10,84,46,23,133,115,97,54,147,49>>
+*/

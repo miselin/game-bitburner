@@ -1,0 +1,6 @@
+/*
+Contract Type: Subarray with Maximum Sum, 10 tries remain
+Description: Given the following integer array, find the contiguous subarray (containing at least one number) which has the largest sum and return that sum. 'Sum' refers to the sum of all the numbers in the subarray.
+ 8,0,-3,-7,10,3,1,3,-1,-8,-4,-1,-2,-2,-6,-1,6,-7,10,-7,2
+Data: <<8,0,-3,-7,10,3,1,3,-1,-8,-4,-1,-2,-2,-6,-1,6,-7,10,-7,2>>
+*/
