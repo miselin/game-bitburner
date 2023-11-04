@@ -1,17 +1,17 @@
-const fs = require("node:fs");
-const path = require("node:path");
-const chokidar = require("chokidar");
-const { src, dist, debugMode } = require("./config");
-const esbuild = require("esbuild");
-const terser = require("terser");
+const fs = require('node:fs');
+const path = require('node:path');
+const chokidar = require('chokidar');
+const { src, dist, debugMode } = require('./config');
+const esbuild = require('esbuild');
+const terser = require('terser');
 
 async function createContext(entryPoints) {
   return await esbuild.context({
     entryPoints,
     bundle: true,
-    format: "esm",
-    platform: "browser",
-    target: "esnext",
+    format: 'esm',
+    platform: 'browser',
+    target: 'esnext',
     outdir: dist,
   });
 }
@@ -27,7 +27,7 @@ async function watchTypeScript() {
 
   chokidar
     .watch([`${src}/**/*.ts`, `${src}/**/*.tsx`])
-    .on("add", async (p) => {
+    .on('add', async (p) => {
       state.entrypoints.add(p);
       state.context = await createContext([...state.entrypoints]);
       try {
@@ -36,7 +36,7 @@ async function watchTypeScript() {
         console.error(`Failed to rebuild: ${e}`);
       }
     })
-    .on("unlink", async (p) => {
+    .on('unlink', async (p) => {
       state.entrypoints.delete(p);
       state.context = await createContext([...state.entrypoints]);
       try {
@@ -45,7 +45,7 @@ async function watchTypeScript() {
         console.error(`Failed to rebuild: ${e}`);
       }
     })
-    .on("change", async () => {
+    .on('change', async () => {
       try {
         await state.context.rebuild();
       } catch (e) {
@@ -54,5 +54,5 @@ async function watchTypeScript() {
     });
 }
 
-console.log("Start watching ts files for transpilation...");
+console.log('Start watching ts files for transpilation...');
 watchTypeScript();

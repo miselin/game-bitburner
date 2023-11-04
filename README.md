@@ -16,3 +16,9 @@ This is a pile of scripts crafted over time and not all of them are good or stil
 ### why esbuild bundling?
 
 it seemed fun
+
+### `lib/env.ts`
+
+To use some scripts that reach out into the outside world, you need to create `env.ts` and export constants with the secret values in them.
+
+These are unique to each environment so it doesn't make sense to add a default for them to this repo.

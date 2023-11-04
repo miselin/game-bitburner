@@ -21,6 +21,7 @@
       "/*": ["*"],
       "@ns": ["../NetscriptDefinitions.d.ts"],
       "@react": ["lib/react.ts"]
-    }
+    },
+    "types": ["browser", "jest"]
   }
 }

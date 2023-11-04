@@ -1,3 +1,5 @@
+src/lib/env.ts
+
 # VSCode
 .vscode/settings.json
 

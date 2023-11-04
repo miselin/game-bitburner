@@ -9,10 +9,13 @@
     "watch:all": "concurrently npm:watch:transpile npm:watch:local npm:watch:remote",
     "watch": "npm run watch:init && npm run watch:all",
     "format": "prettier --write src/**/*.{jsx,js,ts,tsx}",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
-  "author": "hydroflame, Hoekstraa, based on work by SlyCedix",
+  "author": "miselin",
   "devDependencies": {
+    "@types/jest": "^29.5.7",
     "@types/react": "^18.2.34",
     "@types/react-dom": "^18.2.14",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
@@ -21,10 +24,13 @@
     "chokidar": "^3.5.3",
     "concurrently": "^8.2.2",
     "esbuild": "^0.19.5",
+    "esbuild-jest": "^0.5.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-prettier": "^5.0.1",
     "fast-glob": "^3.3.1",
+    "jest": "^29.7.0",
     "prettier": "3.0.3",
     "sync-directory": "^6.0.4",
     "terser": "^5.24.0",
@@ -34,5 +40,8 @@
     "trailingComma": "all",
     "singleQuote": true,
     "semi": true
+  },
+  "dependencies": {
+    "@influxdata/influxdb-client-browser": "^1.33.2"
   }
 }

@@ -64,6 +64,7 @@ export function getAllHosts(ns: NS) {
   scanHost(ns, 'home', machines);
   return [...machines];
 }
+
 /**
  * Analyze all available hosts for hacking.
  * @param ns NS object
