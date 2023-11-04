@@ -1,4 +1,3 @@
-/*
 Contract Type: Algorithmic Stock Trader IV, 10 tries remain
 Description: You are given the following array with two elements:
 
@@ -10,4 +9,3 @@ Description: You are given the following array with two elements:
 
  If no profit can be made, then the answer should be 0.
 Data: <<6,72,7,84,53,64,172,160,60,161,159,69,3,17,11,81,68,126,155,109,42,140>>
-*/
