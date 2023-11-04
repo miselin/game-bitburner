@@ -6,7 +6,9 @@ import { NS } from '@ns';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  const ram = 512;
+  // batch-manager.js requires at least 2048 GB of RAM for many targets
+  // don't bother spending on purchased servers until we can afford that much RAM
+  const ram = 2048;
 
   // eslint-disable-next-line
   while (true) {

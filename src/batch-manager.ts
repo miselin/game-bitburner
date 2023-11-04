@@ -1,3 +1,13 @@
+/**
+ * This script runs a manager that finds the best target to run a HWGW batch for,
+ * and then takes care of running it where it fits. It'll keep doing that forever.
+ *
+ * Generally needs servers with 2048+ GB of RAM! Between prepare and the batches,
+ * this is pretty RAM-intensive.
+ *
+ * Use `run-managers.js` until `home` and purchased servers get large enough.
+ */
+
 import { NS } from '@ns';
 import { GAP } from './lib/constants';
 import { analyzeHackableHosts } from './lib/hosts';
@@ -61,10 +71,13 @@ export async function main(ns: NS) {
           host.currentMoney === host.money &&
           host.securityLevel === host.minSecurityLevel
         ) {
-          ns.tprintf('INFO: batch-manager has successfully prepared %s', host);
+          ns.tprintf(
+            'INFO: batch-manager has successfully prepared %s',
+            host.name,
+          );
           hostData[host.name].prepared = true;
         } else if (!hostData[host.name].currentlyPreparing) {
-          ns.tprintf('INFO: batch-manager is preparing %s', host);
+          ns.tprintf('INFO: batch-manager is preparing %s', host.name);
 
           const grows = growThreadsFor(ns, host.name);
           const weakens = weakenThreadsFor(ns, host.name);
@@ -82,7 +95,7 @@ export async function main(ns: NS) {
           } else {
             ns.tprintf(
               'WARN: batch-manager could not prepare %s, will try again in %.2f seconds',
-              host,
+              host.name,
               hostData[host.name].retryMs / 1000,
             );
             hostData[host.name].retryAfter =
@@ -117,6 +130,12 @@ export async function main(ns: NS) {
       if (pid > 0) {
         found = true;
         break;
+      } else {
+        ns.tprintf(
+          'could not fit hgw-batch targeting %s (needs %d ram)',
+          candidateHosts[i].name,
+          candidateHosts[i].ramPerBatch,
+        );
       }
     }
 

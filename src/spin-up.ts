@@ -22,7 +22,7 @@ export async function main(ns: NS) {
 
   ns.run('gain-access.js');
   ns.run('update-scripts.js');
-  if (homeRam > 256) {
+  if (homeRam > 2048) {
     // early game we skip buying servers to maximize the home server
     ns.run('buy-servers.js');
   } else {

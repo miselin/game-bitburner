@@ -5,7 +5,7 @@ import { NS } from '@ns';
  */
 
 export async function main(ns: NS) {
-  let targetRam = 1024;
+  let targetRam = 4096;
 
   // eslint-disable-next-line
   while (true) {
