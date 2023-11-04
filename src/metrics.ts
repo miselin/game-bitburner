@@ -16,7 +16,7 @@ export async function main(ns: NS) {
 
   const influxApi = new InfluxDB({ url, token }).getWriteApi(
     'home',
-    'bitburner',
+    'Bitburner',
     'ns',
   );
 

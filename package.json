@@ -11,7 +11,8 @@
     "format": "prettier --write src/**/*.{jsx,js,ts,tsx}",
     "lint": "eslint src/",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "script": "node --loader esbuild-register/loader -r esbuild-register"
   },
   "author": "miselin",
   "devDependencies": {
@@ -25,6 +26,7 @@
     "concurrently": "^8.2.2",
     "esbuild": "^0.19.5",
     "esbuild-jest": "^0.5.0",
+    "esbuild-register": "^3.5.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-jest": "^27.6.0",
@@ -42,6 +44,7 @@
     "semi": true
   },
   "dependencies": {
-    "@influxdata/influxdb-client-browser": "^1.33.2"
+    "@influxdata/influxdb-client-browser": "^1.33.2",
+    "chatgpt": "^5.2.5"
   }
 }

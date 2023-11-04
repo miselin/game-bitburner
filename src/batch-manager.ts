@@ -130,12 +130,6 @@ export async function main(ns: NS) {
       if (pid > 0) {
         found = true;
         break;
-      } else {
-        ns.tprintf(
-          'could not fit hgw-batch targeting %s (needs %d ram)',
-          candidateHosts[i].name,
-          candidateHosts[i].ramPerBatch,
-        );
       }
     }
 
