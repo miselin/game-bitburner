@@ -13,11 +13,11 @@ export async function main(ns: NS) {
       .filter(hasNoRootP(ns))
       .forEach((host) => {
         try {
-          ns.brutessh(host);
-          ns.ftpcrack(host);
-          ns.relaysmtp(host);
-          ns.httpworm(host);
-          ns.sqlinject(host);
+          ns.fileExists('BruteSSH.exe', 'home') && ns.brutessh(host);
+          ns.fileExists('FTPCrack.exe', 'home') && ns.ftpcrack(host);
+          ns.fileExists('relaySMTP.exe', 'home') && ns.relaysmtp(host);
+          ns.fileExists('HTTPWorm.exe', 'home') && ns.httpworm(host);
+          ns.fileExists('SQLInject.exe', 'home') && ns.sqlinject(host);
         } catch {
           console.error('failed - probably do not yet have the program');
         }

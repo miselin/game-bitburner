@@ -71,13 +71,13 @@ export async function main(ns: NS) {
           host.currentMoney === host.money &&
           host.securityLevel === host.minSecurityLevel
         ) {
-          ns.tprintf(
+          ns.printf(
             'INFO: batch-manager has successfully prepared %s',
             host.name,
           );
           hostData[host.name].prepared = true;
         } else if (!hostData[host.name].currentlyPreparing) {
-          ns.tprintf('INFO: batch-manager is preparing %s', host.name);
+          ns.printf('INFO: batch-manager is preparing %s', host.name);
 
           const grows = growThreadsFor(ns, host.name);
           const weakens = weakenThreadsFor(ns, host.name);
@@ -93,7 +93,7 @@ export async function main(ns: NS) {
           if (pid) {
             hostData[host.name].currentlyPreparing = true;
           } else {
-            ns.tprintf(
+            ns.printf(
               'WARN: batch-manager could not prepare %s, will try again in %.2f seconds',
               host.name,
               hostData[host.name].retryMs / 1000,
