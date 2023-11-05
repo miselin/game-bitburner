@@ -12,7 +12,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "strict": true,
-    "rootDir": "src/",
+    "rootDir": "./",
     "outDir": "dist/",
     "baseUrl": "src/",
     "allowJs": true,

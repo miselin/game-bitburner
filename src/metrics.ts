@@ -92,6 +92,6 @@ export async function main(ns: NS) {
     });
 
     await influxApi.flush();
-    await ns.sleep(15000);
+    await ns.sleep(5000);
   }
 }

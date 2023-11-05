@@ -22,6 +22,7 @@ export async function main(ns: NS) {
 
   ns.run('gain-access.js');
   ns.run('update-scripts.js');
+  ns.run('metrics.js');
   if (homeRam > 2048) {
     // early game we skip buying servers to maximize the home server
     ns.run('buy-servers.js');
@@ -37,10 +38,17 @@ export async function main(ns: NS) {
     ns.run('hud-stats.js');
   }
 
-  if (homeRam < 1024) {
+  // the batch manager needs a LOT of RAM to do prepares + batches
+  // it's much better to run the cheap manager until we get there
+  // the batch manager has extremely high potential income but only
+  // if there's enough RAM...
+  if (homeRam < 32768) {
     // low RAM, use the cheap manager that doesn't require a big prepare
     ns.run('run-managers.js');
   } else {
+    // give gain-access a moment to work
+    await ns.sleep(5000);
+
     // make sure we always have at least one server prepped to target with the batch manager
     const pid = ns.run('prepare.js', 1, 'joesguns');
     if (pid === 0) {

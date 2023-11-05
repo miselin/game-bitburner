@@ -1,5 +1,6 @@
 import { NS } from '@ns';
 import { getAllHosts } from './lib/hosts';
+import { analyzeTarget } from './lib/hacks';
 
 /**
  * Early game hack manager, just tries to maximize income without RAM for HWGW batching.
@@ -125,15 +126,21 @@ function updateHostState(ns: NS, state: State) {
   });
 }
 
-function runEverywhere(
+async function runEverywhere(
   ns: NS,
   state: State,
   script: string,
   target: string,
   nthSlot: number,
   totalSlots: number,
+  maxThreads?: number,
 ) {
   state.hosts.forEach((entry) => {
+    // once we've exceeded maxThreads, no more runs
+    if (maxThreads !== undefined && maxThreads === 0) {
+      return;
+    }
+
     for (let i = nthSlot; i < entry.slots.length; i += totalSlots) {
       if (entry.slots[i] !== null) {
         continue;
@@ -151,8 +158,30 @@ function runEverywhere(
       }
 
       entry.slots[i] = pid;
+
+      // if we have a thread limit, break early if we hit it
+      if (maxThreads !== undefined && maxThreads-- === 1) {
+        break;
+      }
     }
   });
+
+  // wait for all of our slots to complete before moving on
+  // this stops overhacking caused by the main loop hitting runEverywhere
+  // a second time which means we would essentially ignore maxThreads
+  for (let i = 0; i < state.hosts.length; i++) {
+    const entry = state.hosts[i];
+    for (let j = nthSlot; j < entry.slots.length; j += totalSlots) {
+      const slot = entry.slots[j];
+      if (slot !== null) {
+        while (ns.isRunning(slot, entry.host)) {
+          await ns.sleep(1000);
+        }
+
+        entry.slots[j] = null;
+      }
+    }
+  }
 }
 
 export async function main(ns: NS) {
@@ -219,6 +248,10 @@ export async function main(ns: NS) {
     const targetSecurity = ns.getServerSecurityLevel(target);
     const targetMoney = ns.getServerMoneyAvailable(target);
 
+    // limit the number of hack threads we use across all servers to
+    // ensure we don't overhack and spend too much time in grow/weaken
+    const { hacks } = analyzeTarget(ns, target);
+
     ns.printf(
       'target %s: money %d/%d, security %d/%d',
       target,
@@ -233,13 +266,22 @@ export async function main(ns: NS) {
     // 2. weaken the server if it's too secure, which will have happened while we grew it
     // 3. otherwise, hack!
     if (targetSecurity > securityThreshold) {
-      runEverywhere(ns, state, 'weaken.js', target, nthSlot, totalSlots);
+      await runEverywhere(ns, state, 'weaken.js', target, nthSlot, totalSlots);
     } else if (targetMoney < moneyThreshold) {
-      runEverywhere(ns, state, 'grow.js', target, nthSlot, totalSlots);
+      await runEverywhere(ns, state, 'grow.js', target, nthSlot, totalSlots);
     } else {
-      runEverywhere(ns, state, 'hack.js', target, nthSlot, totalSlots);
+      await runEverywhere(
+        ns,
+        state,
+        'hack.js',
+        target,
+        nthSlot,
+        totalSlots,
+        hacks,
+      );
     }
 
-    await ns.sleep(5000);
+    // safety net in case runEverywhere doesn't sleep (e.g. no RAM anywhere)
+    await ns.sleep(100);
   }
 }

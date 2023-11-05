@@ -40,10 +40,8 @@ function Analysis({
           <td>{analysis.hacks}</td>
         </tr>
         <tr>
-          <td>hacks2</td>
-          <td>
-            {analysis.hacks2}, {analysis.hacks2 * analysis.goalMoney}
-          </td>
+          <td>hackPercent</td>
+          <td>{analysis.hackPercent}</td>
         </tr>
         <tr>
           <td>weakensAfterGrow</td>
@@ -60,6 +58,10 @@ function Analysis({
         <tr>
           <td>total RAM</td>
           <td>{analysis.totalRam}</td>
+        </tr>
+        <tr>
+          <td>goal money per hack</td>
+          <td>{analysis.goalMoney}</td>
         </tr>
       </table>
     </div>

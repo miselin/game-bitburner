@@ -9,17 +9,18 @@ export type RunnableServer = {
 };
 
 // get servers, sorted by amount of RAM available
-export function getRunnableServers(ns: NS) {
-  const servers = ['home', ...ns.getPurchasedServers()].map(
-    (s): RunnableServer => {
-      return {
-        hostname: s,
-        cpuCores: ns.getServer(s).cpuCores,
-        maxRam: ns.getServerMaxRam(s),
-        ramUsed: ns.getServerUsedRam(s),
-      };
-    },
-  );
+export function getRunnableServers(ns: NS, includeHome?: boolean) {
+  const servers = [
+    ...(includeHome ? ['home'] : []),
+    ...ns.getPurchasedServers(),
+  ].map((s): RunnableServer => {
+    return {
+      hostname: s,
+      cpuCores: ns.getServer(s).cpuCores,
+      maxRam: ns.getServerMaxRam(s),
+      ramUsed: ns.getServerUsedRam(s),
+    };
+  });
   servers.sort((a, b) => {
     const availA = a.maxRam - a.ramUsed;
     const availB = b.maxRam - b.ramUsed;

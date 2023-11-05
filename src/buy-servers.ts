@@ -6,13 +6,17 @@ import { NS } from '@ns';
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  // batch-manager.js requires at least 2048 GB of RAM for many targets
+  ns.disableLog('ALL');
+
+  // batch-manager.js requires at least 3000 GB of RAM for many targets
   // don't bother spending on purchased servers until we can afford that much RAM
-  const ram = 2048;
+  const ram = 4096;
 
   // eslint-disable-next-line
   while (true) {
-    if (ns.getServerMoneyAvailable('home') > ns.getPurchasedServerCost(ram)) {
+    const money = ns.getServerMoneyAvailable('home');
+    const cost = ns.getPurchasedServerCost(ram);
+    if (money > cost) {
       const hostname = ns.purchaseServer(`local-0`, ram);
       if (hostname === '') {
         break;
@@ -31,6 +35,8 @@ export async function main(ns: NS) {
       );
 
       ns.tprintf('BUY: purchased %s', hostname);
+    } else {
+      ns.printf('INFO: next server purchase requires %d money', cost);
     }
 
     await ns.sleep(1000);

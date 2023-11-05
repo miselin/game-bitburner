@@ -11,7 +11,12 @@
 import { NS } from '@ns';
 import { GAP } from './lib/constants';
 import { analyzeHackableHosts } from './lib/hosts';
-import { getRunnableServers, killallOnServer, runWhereFits } from './lib/run';
+import {
+  RunnableServer,
+  getRunnableServers,
+  killallOnServer,
+  runWhereFits,
+} from './lib/run';
 import type { Host } from './lib/hosts';
 import { growThreadsFor, weakenThreadsFor } from './lib/hacks';
 
@@ -24,6 +29,10 @@ type BatchHost = {
 
 export async function main(ns: NS) {
   ns.disableLog('ALL');
+
+  let lastServerUpdate = null;
+  let lastHostDataUpdate = null;
+  let lastBatch = null;
 
   // General algo, looping forever
   // 1. Check targets
@@ -38,10 +47,21 @@ export async function main(ns: NS) {
   // when starting the manager, clear out everything else on this server
   await killallOnServer(ns, ns.getHostname());
 
-  // eslint-disable-next-line
-  while (true) {
-    const servers = getRunnableServers(ns);
+  let servers: Array<RunnableServer> = [];
 
+  // every few seconds, update our list of servers
+  const updateServerData = () => {
+    // try to avoid using home if we can, so it can be used for prepares instead
+    let newServers = getRunnableServers(ns, false);
+    if (newServers.length === 0) {
+      newServers = getRunnableServers(ns, true);
+    }
+
+    servers = newServers;
+  };
+
+  // every few seconds, handle preparing hosts  that we haven't seen before
+  const updateHostData = () => {
     // enumerate all the potential machines out there
     analyzeHackableHosts(ns).forEach((host) => {
       if (!hostData[host.name]) {
@@ -76,6 +96,9 @@ export async function main(ns: NS) {
             host.name,
           );
           hostData[host.name].prepared = true;
+          hostData[host.name].currentlyPreparing = false;
+          hostData[host.name].retryAfter = 0;
+          hostData[host.name].retryMs = 5000;
         } else if (!hostData[host.name].currentlyPreparing) {
           ns.printf('INFO: batch-manager is preparing %s', host.name);
 
@@ -109,13 +132,15 @@ export async function main(ns: NS) {
         }
       }
     });
+  };
 
+  // we run every batch on a set tick interval to minimize weird sync issues
+  // if nothing can run on a tick, that's fine. the next one will get it
+  const runBatches = () => {
     const candidateHosts = Object.values(hostData).filter((h) => h.prepared);
-
     candidateHosts.sort((a, b) => b.moneyPerMs - a.moneyPerMs);
 
     // keep trying backup options for target until we find one that fits
-    let found = false;
     for (let i = 0; i < candidateHosts.length; i++) {
       const pid = runWhereFits(
         ns,
@@ -124,22 +149,45 @@ export async function main(ns: NS) {
         1,
         candidateHosts[i].ramPerBatch,
         candidateHosts[i].name,
-        batch++,
+        batch,
       );
 
       if (pid > 0) {
-        found = true;
+        batch++;
         break;
+      } else {
+        ns.printf(
+          'WARN: failed to run hgw-batch targeting %s',
+          candidateHosts[i].name,
+        );
       }
     }
 
-    // sleep for a tiny bit longer if we couldn't fit any batches anywhere
-    // this is just better for the host CPU, no real benefit
-    if (!found) {
-      await ns.sleep(1000);
-      continue;
+    lastBatch = Date.now();
+  };
+
+  // eslint-disable-next-line
+  while (true) {
+    const now = Date.now();
+    if (lastServerUpdate === null || lastServerUpdate + 10000 < now) {
+      updateServerData();
+      lastServerUpdate = now;
+    }
+    if (lastHostDataUpdate === null || lastHostDataUpdate + 5000 < now) {
+      updateHostData();
+      lastHostDataUpdate = now;
+    }
+    if (lastBatch === null || lastBatch + GAP * 4 < now) {
+      runBatches();
+      lastBatch = now;
     }
 
-    await ns.sleep(GAP * 4);
+    // the above steps take time. we need to account for that to keep ticks correct
+    const timeTaken = Date.now() - now;
+    const tick = GAP - timeTaken;
+
+    if (tick > 0) {
+      await ns.sleep(tick);
+    }
   }
 }

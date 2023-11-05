@@ -82,9 +82,8 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
 
     server.moneyAvailable = maxMoney;
 
-    const hacks = Math.floor(
-      MONEY_PERCENT_PER_HACK / ns.formulas.hacking.hackPercent(server, player),
-    );
+    const hackPercent = ns.formulas.hacking.hackPercent(server, player);
+    const hacks = Math.floor(MONEY_PERCENT_PER_HACK / hackPercent);
     const hacks2 = hacks;
 
     const weakenTime = ns.formulas.hacking.weakenTime(server, player);
@@ -112,6 +111,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
       totalThreads,
       totalRam,
       goalMoney: maxMoney * (1 - MONEY_PERCENT_PER_HACK),
+      hackPercent,
     };
   }
 
@@ -158,6 +158,7 @@ export function analyzeTarget(ns: NS, target: string, cores?: number) {
     totalThreads,
     totalRam,
     goalMoney: maxMoney * (1 - MONEY_PERCENT_PER_HACK),
+    hackPercent: -1, // unknown without formulas.exe
   };
 }
 
