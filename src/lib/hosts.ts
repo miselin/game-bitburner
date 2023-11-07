@@ -1,5 +1,5 @@
 import { NS } from '@ns';
-import { analyzeTarget } from './hacks';
+import { HostAnalysis, analyzeTarget } from './hacks';
 import { GAP } from './constants';
 
 export type Host = {
@@ -15,6 +15,7 @@ export type Host = {
   ramPerBatch: number;
   // potentially earnable money/millisecond on t his server
   moneyPerMs: number;
+  analysis: HostAnalysis;
 };
 
 export function scanHost(
@@ -94,7 +95,8 @@ export function analyzeHackableHosts(ns: NS) {
         return null;
       }
 
-      const { totalThreads, weakenTime } = analyzeTarget(ns, host, 1);
+      const analysis = analyzeTarget(ns, host, 1);
+      const { totalThreads, weakenTime } = analysis;
 
       return {
         name: host,
@@ -104,8 +106,9 @@ export function analyzeHackableHosts(ns: NS) {
         securityLevel,
         minSecurityLevel,
         totalThreads,
-        ramPerBatch: totalThreads * 2 + ns.getScriptRam('hgw-batch.js'),
+        ramPerBatch: totalThreads * 2,
         moneyPerMs: (maxMoney * 0.5) / (weakenTime + 2 * GAP),
+        analysis,
       };
     })
     .filter((h): h is Host => h !== null)

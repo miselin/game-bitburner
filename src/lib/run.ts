@@ -29,10 +29,20 @@ export function getRunnableServers(ns: NS, includeHome?: boolean) {
   return servers;
 }
 
+/**
+ * Find a RunnableServer where the given amount of RAM will fit.
+ * Considers "free" RAM rather than "max" RAM.
+ * @param ns NS object
+ * @param servers List of servers to search through
+ * @param totalRam Total RAM needed to fit into a server
+ * @param mutate If true, the server objects will be mutated to increase their ramUsed
+ * @returns
+ */
 export function findWhereFits(
   ns: NS,
   servers: Array<RunnableServer>,
   totalRam: number,
+  mutate?: boolean,
 ): RunnableServer | null {
   for (let i = 0; i < servers.length; i++) {
     const availRam = servers[i].maxRam - servers[i].ramUsed;
@@ -47,6 +57,10 @@ export function findWhereFits(
     }
     if (availRam < totalRam) {
       continue;
+    }
+
+    if (mutate) {
+      servers[i].ramUsed += totalRam;
     }
 
     return servers[i];

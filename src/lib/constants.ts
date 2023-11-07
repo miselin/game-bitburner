@@ -14,3 +14,6 @@ export const MONEY_PERCENT_PER_HACK = 0.5;
 
 // Set to true to enable some debug logging
 export const DEBUG = false;
+
+export const SECOND = 1000;
+export const MINUTE = 60 * SECOND;

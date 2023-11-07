@@ -50,9 +50,13 @@ export function weakenThreadsFor(ns: NS, target: string, cores?: number) {
 }
 
 export function analyzeTarget(ns: NS, target: string, cores?: number) {
+  // TODO: need to figure out how to account for hack XP
+  // e.g. lower # of hacks if the XP will cause a level-up in hacking skill
+  // otherwise leveling up causes major overhacks
+
   const maxMoney = ns.getServerMaxMoney(target);
   const minSecurity = ns.getServerMinSecurityLevel(target);
-  const baseSecurity = ns.getServerMinSecurityLevel(target);
+  const baseSecurity = ns.getServerBaseSecurityLevel(target);
 
   // Formulas version, which only works if server is actually at lowest sec, max money
   // eslint-disable-next-line
@@ -181,3 +185,5 @@ export function hacksNeededForPercentFormulas(
 export function hasFormulas(ns: NS) {
   return ns.fileExists('Formulas.exe', 'home');
 }
+
+export type HostAnalysis = ReturnType<typeof analyzeTarget>;

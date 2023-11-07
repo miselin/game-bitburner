@@ -9,16 +9,18 @@
  */
 
 import { NS } from '@ns';
-import { GAP } from './lib/constants';
+import { GAP, MINUTE } from './lib/constants';
 import { analyzeHackableHosts } from './lib/hosts';
 import {
   RunnableServer,
+  findWhereFits,
   getRunnableServers,
   killallOnServer,
   runWhereFits,
 } from './lib/run';
 import type { Host } from './lib/hosts';
 import { growThreadsFor, weakenThreadsFor } from './lib/hacks';
+import { ensureString } from './lib/typing';
 
 type BatchHost = {
   prepared: boolean;
@@ -27,8 +29,15 @@ type BatchHost = {
   retryMs: number;
 } & Host;
 
+// BATCHER_V2 enables the newer mode of the batcher that controls all batches
+// from the batch-manager script. The older mode runs hgw-batch.js to do the
+// actual batching logic.
+const BATCHER_V2 = true;
+
 export async function main(ns: NS) {
   ns.disableLog('ALL');
+
+  const targetHost = ns.args[0] !== undefined ? ensureString(ns.args[0]) : null;
 
   let lastServerUpdate = null;
   let lastHostDataUpdate = null;
@@ -48,13 +57,17 @@ export async function main(ns: NS) {
   await killallOnServer(ns, ns.getHostname());
 
   let servers: Array<RunnableServer> = [];
+  let serversIncludingHome: Array<RunnableServer> = [];
 
   // every few seconds, update our list of servers
   const updateServerData = () => {
-    // try to avoid using home if we can, so it can be used for prepares instead
+    serversIncludingHome = getRunnableServers(ns, true);
+
+    // try to avoid using home for batches if we can,
+    // so it can be used for prepares instead
     let newServers = getRunnableServers(ns, false);
     if (newServers.length === 0) {
-      newServers = getRunnableServers(ns, true);
+      newServers = serversIncludingHome;
     }
 
     servers = newServers;
@@ -64,6 +77,10 @@ export async function main(ns: NS) {
   const updateHostData = () => {
     // enumerate all the potential machines out there
     analyzeHackableHosts(ns).forEach((host) => {
+      if (targetHost !== null && host.name !== targetHost) {
+        return;
+      }
+
       if (!hostData[host.name]) {
         hostData[host.name] = {
           ...host,
@@ -81,12 +98,28 @@ export async function main(ns: NS) {
       hostData[host.name].securityLevel = host.securityLevel;
       hostData[host.name].minSecurityLevel = host.minSecurityLevel;
       hostData[host.name].ramPerBatch =
-        host.totalThreads * 2 + ns.getScriptRam('hgw-batch.js');
+        host.totalThreads * 2 +
+        (BATCHER_V2 ? 0 : ns.getScriptRam('hgw-batch.js'));
+      hostData[host.name].analysis = host.analysis;
 
       if (
         !hostData[host.name].prepared &&
         Date.now() > hostData[host.name].retryAfter
       ) {
+        // avoid preparing the host if it's very long to do so
+        // this means we'll instead wait for better hacking skill
+        if (
+          host.analysis.weakenTime > 3 * MINUTE ||
+          host.analysis.growTime > 3 * MINUTE
+        ) {
+          ns.printf(
+            'INFO: batch-manager delaying prepare of %s as it currently takes too long',
+            host.name,
+          );
+          hostData[host.name].retryAfter = 60000;
+          return;
+        }
+
         if (
           host.currentMoney === host.money &&
           host.securityLevel === host.minSecurityLevel
@@ -107,7 +140,7 @@ export async function main(ns: NS) {
           const ram = (grows + weakens) * 2 + ns.getScriptRam('prepare.js');
           const pid = runWhereFits(
             ns,
-            servers,
+            serversIncludingHome,
             'prepare.js',
             1,
             ram,
@@ -136,34 +169,99 @@ export async function main(ns: NS) {
 
   // we run every batch on a set tick interval to minimize weird sync issues
   // if nothing can run on a tick, that's fine. the next one will get it
-  const runBatches = () => {
-    const candidateHosts = Object.values(hostData).filter((h) => h.prepared);
+  const runBatches = async () => {
+    const candidateHosts = Object.values(hostData).filter(
+      (h) => h.prepared && h.analysis.grows >= 0 && h.analysis.hacks >= 0,
+    );
     candidateHosts.sort((a, b) => b.moneyPerMs - a.moneyPerMs);
 
     // keep trying backup options for target until we find one that fits
     for (let i = 0; i < candidateHosts.length; i++) {
-      const pid = runWhereFits(
+      const server = findWhereFits(
         ns,
         servers,
-        'hgw-batch.js',
-        1,
         candidateHosts[i].ramPerBatch,
-        candidateHosts[i].name,
-        batch,
+        true,
       );
+      if (!server) {
+        continue;
+      }
 
-      if (pid > 0) {
+      const host = server.hostname;
+      const target = candidateHosts[i].name;
+
+      const {
+        weakenTime,
+        weakensAfterHack,
+        weakensAfterGrow,
+        grows,
+        hacks,
+        growTime,
+        hackTime,
+      } = candidateHosts[i].analysis;
+
+      const t0 = Date.now();
+
+      let pids: Record<string, number | null> = {};
+
+      if (BATCHER_V2) {
+        // when passing the additionalMsec, make sure it's offset by the time ns.exec takes to run for max stability
+        pids = {
+          weaken0: ns.exec(
+            'weaken.js',
+            host,
+            weakensAfterHack,
+            target,
+            0,
+            batch,
+          ),
+          weaken1: ns.exec(
+            'weaken.js',
+            host,
+            weakensAfterGrow,
+            target,
+            2 * GAP - (Date.now() - t0),
+            batch,
+          ),
+          grow: ns.exec(
+            'grow.js',
+            host,
+            grows,
+            target,
+            weakenTime + GAP - growTime - (Date.now() - t0),
+            batch,
+          ),
+          hack: ns.exec(
+            'hack.js',
+            host,
+            hacks,
+            target,
+            weakenTime - GAP - hackTime - (Date.now() - t0),
+            batch,
+          ),
+        };
+      } else {
+        pids = {
+          hgw: ns.exec('hgw-batch.js', host, 1, target, batch),
+        };
+      }
+
+      if (Object.values(pids).filter((p) => p === 0).length === 0) {
         batch++;
         break;
       } else {
+        // one of the scripts failed to run, need to kill the others
+        Object.values(pids).forEach((p) => {
+          if (p !== null && p > 0) {
+            ns.kill(p);
+          }
+        });
         ns.printf(
-          'WARN: failed to run hgw-batch targeting %s',
+          'WARN: failed to run batch targeting %s',
           candidateHosts[i].name,
         );
       }
     }
-
-    lastBatch = Date.now();
   };
 
   // eslint-disable-next-line
